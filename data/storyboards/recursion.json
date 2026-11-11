@@ -1,0 +1,27 @@
+{
+  "concept_id": "recursion",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:06:08Z",
+  "prompt_tokens": 265,
+  "completion_tokens": 510,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Defining Factorial Recursively",
+        "visual": "A title 'Factorial: n!' appears at top center. Below it, the base case equation '0! = 1' is drawn in yellow text, followed by the recursive step equation 'n! = n * (n - 1)!' appearing below in blue text. A box highlights '(n - 1)!' showing that the function calls itself.",
+        "narration": "To compute a factorial recursively, we break the problem into a smaller subproblem. The factorial of n is simply n times the factorial of n minus 1, reaching 1 when n is 0."
+      },
+      {
+        "title": "Building the Call Stack",
+        "visual": "A vertical frame titled 'Call Stack' appears on the right half. On the left half, text shows 'Compute 3!'. A rectangular box labeled 'fact(3) -> 3 * fact(2)' slides into the bottom of the stack. Next, 'fact(2) -> 2 * fact(1)' slides on top of it, followed by 'fact(1) -> 1 * fact(0)', and finally 'fact(0) -> 1' lands on top.",
+        "narration": "When calculating 3 factorial, the computer defers each multiplication and pushes a new function frame onto the call stack. Each frame waits for the smaller subproblem above it to finish."
+      },
+      {
+        "title": "Unwinding the Call Stack",
+        "visual": "The top box 'fact(0) -> 1' flashes bright green and vanishes, leaving a glowing '1' arrow pointing down to 'fact(1)'. The frame 'fact(1)' updates its value to '1 * 1 = 1' and pops off. The value '1' flows down to 'fact(2)', updating it to '2 * 1 = 2'. Finally, '2' flows into 'fact(3)', which evaluates '3 * 2 = 6' as the last stack frame pops off.",
+        "narration": "Once the base case yields 1, the stack unwinds. Return values bubble back down through each waiting frame, completing the deferred multiplications until we reach the final answer of 6."
+      }
+    ]
+  }
+}

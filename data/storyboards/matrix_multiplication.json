@@ -1,0 +1,27 @@
+{
+  "concept_id": "matrix_multiplication",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:05:48Z",
+  "prompt_tokens": 273,
+  "completion_tokens": 491,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Matrix Multiplication Overview",
+        "visual": "Two 2x2 matrices labeled A and B appear side-by-side with an equals sign leading to a blank 2x2 result matrix C. Matrix A contains entries [a11, a12; a21, a22] in white text and matrix B contains [b11, b12; b21, b22]. Matrix C displays four empty dashed square boxes representing its four entry positions.",
+        "narration": "When we multiply two matrices together, we build the resulting matrix entry by entry. Each position in the output is computed through a structured combination of the original numbers."
+      },
+      {
+        "title": "Row Dotted with Column",
+        "visual": "Matrix A's top row [a11, a12] highlights in yellow. Simultaneously, Matrix B's left column [b11; b21] highlights in cyan. An animated curved arrow sweeps from both highlighted regions toward the top-left box of Matrix C, filling it with the dot product expression (a11*b11 + a12*b21) in yellow and cyan text.",
+        "narration": "To find the entry in row 1, column 1 of the product, we take the dot product of row 1 from the first matrix and column 1 from the second matrix. We multiply corresponding entries and add them together."
+      },
+      {
+        "title": "Computing Remaining Entries",
+        "visual": "Matrix A's bottom row [a21, a22] highlights in orange, while Matrix B's right column [b12; b22] highlights in green. An arrow sweeps from them to the bottom-right box of Matrix C, filling it with (a21*b12 + a22*b22). The top-right and bottom-left entries of C then quickly populate using matching row-column pairs.",
+        "narration": "This rule applies universally: the entry at row i and column j of the result is always the dot product of row i from the left matrix with column j from the right matrix."
+      }
+    ]
+  }
+}

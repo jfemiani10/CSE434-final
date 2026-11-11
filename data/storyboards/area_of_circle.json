@@ -1,0 +1,32 @@
+{
+  "concept_id": "area_of_circle",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:05:44Z",
+  "prompt_tokens": 279,
+  "completion_tokens": 481,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Circle and Wedges",
+        "visual": "A circle of radius r drawn with a solid line centered on screen. A radial line from the center to the right edge is labeled 'r'. The circle's perimeter is highlighted in yellow and labeled '2 \\pi r'. The circle then divides into 8 equal colored sectors (wedges) radiating from the center.",
+        "narration": "To find the area of a circle, let's start by dividing it into equal slices or wedges. Notice that the distance around the outside edge is its circumference, two pi times r."
+      },
+      {
+        "title": "Unrolling into a Row",
+        "visual": " exact 8 wedges smoothly detach from the circle shape and align side-by-side in a horizontal row at the center of the screen, alternating pointing up and pointing down, interlocking to form a bumpy parallelogram shape.",
+        "narration": "If we take these wedges and rearrange them alternating top and bottom, they start to form a shape that looks remarkably like a rectangle."
+      },
+      {
+        "title": "Increasing Wedge Count",
+        "visual": "The interlocking row of 8 wedges smoothly morphs into 32 much thinner wedges, making the top and bottom edges visually flatten out into smooth horizontal straight lines.",
+        "narration": "As we divide the circle into more and more infinitely thin wedges, the bumpy edges flatten out into perfect straight lines."
+      },
+      {
+        "title": "Calculating Area",
+        "visual": "The flattened shape transitions into a exact rectangle. A vertical dimension line on the left side is labeled 'r' (the radius/wedge height). A horizontal dimension line on the bottom edge is labeled '\\pi r' (half the circumference). Below the rectangle, the equation 'Area = base \\times height = (\\pi r) \\cdot r = \\pi r^2' appears line by line.",
+        "narration": "The height of this rectangle is simply the radius r, and the width is half of the original circumference, which is pi times r. Multiplying width by height gives the famous formula: pi r squared."
+      }
+    ]
+  }
+}

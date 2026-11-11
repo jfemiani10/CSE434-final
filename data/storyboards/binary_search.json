@@ -1,0 +1,27 @@
+{
+  "concept_id": "binary_search",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:05:52Z",
+  "prompt_tokens": 268,
+  "completion_tokens": 479,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Initial Array Setup",
+        "visual": "A horizontal row of 8 square cells appears in the center of the screen, each containing a sorted number: [2, 5, 8, 12, 16, 23, 38, 56]. Above the array, a text label reads 'Target: 23' highlighted in yellow. Below the array, two vertical arrows labeled 'Low' and 'High' point to the first cell (2) and the last cell (56).",
+        "narration": "To find a number in a sorted array using binary search, we don't need to check every element one by one. We start with a search range spanning from the very first element to the very last."
+      },
+      {
+        "title": "First Split and Comparison",
+        "visual": "A third arrow labeled 'Mid' points to the middle-left element, 12. The cell for 12 highlights in blue. Text appears above the target reading '12 < 23'. The cells for 2, 5, 8, and 12 fade to dark gray, and the 'Low' arrow moves to point at cell 16.",
+        "narration": "We calculate the middle index and compare its value to our target. Since 12 is less than 23, we can eliminate the entire left half of the array in a single step."
+      },
+      {
+        "title": "Second Split and Finding Target",
+        "visual": "The active range shows elements [16, 23, 38, 56]. The 'Mid' arrow moves to point at cell 23, which highlights in blue. Below the array, text pops up reading '23 == 23'. The cell 23 turns green with a glowing outline while surrounding grayed-out cells gently fade away.",
+        "narration": "We re-calculate the midpoint of our remaining range, which lands directly on 23. The midpoint matches our target, successfully finding the number in just two steps instead of six."
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "concept_id": "big_o_notation",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:06:16Z",
+  "prompt_tokens": 277,
+  "completion_tokens": 560,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Introduction to Growth",
+        "visual": "A title text reading 'Big-O Notation' appears at the top. Below it, three functions are displayed in a vertical list: 'O(n)', 'O(n log n)', and 'O(n^2)'. Each equation glows one by one with distinct colors (Blue for n, Green for n log n, and Red for n^2).",
+        "narration": "In computer science, Big-O notation describes how an algorithm's runtime scales as the input size grows. Let's compare three common time complexities: linear, n log n, and quadratic."
+      },
+      {
+        "title": "Plotting the Curves",
+        "visual": "A 2D coordinate plane appears with labeled axes: horizontal axis labeled 'Input Size (n)' and vertical axis labeled 'Operations'. Three colored curves trace out smoothly from the origin: a linear line y = x in blue, a y = x log(x) curve in green, and a steep parabola y = x^2 in red. Text labels appear next to each curve.",
+        "narration": "For small values of n, the difference between these algorithms might seem modest. But as n increases, their growth trajectories diverge dramatically."
+      },
+      {
+        "title": "Scaling Up to Large Inputs",
+        "visual": "The camera zooms out on the coordinate plane, causing the axes to rescale to much larger numbers. The red n^2 curve shoots rapidly off the top of the frame, while the blue line stays moderate and the green n log n curve grows only slightly faster than the line. An arrow highlights the huge vertical gap between n log n and n^2.",
+        "narration": "When n becomes very large, higher-order terms dominate completely. The quadratic algorithm quickly becomes impractical, while n log n scales remarkably well."
+      },
+      {
+        "title": "Dominant Term Takeaway",
+        "visual": "The graph fades away leaving a large equation: 'T(n) = 3n^2 + 50n + 100'. A red rectangle highlights '3n^2'. The smaller terms '50n + 100' fade out and transform into an arrow pointing to the final simplified notation: 'O(n^2)'.",
+        "narration": "That's why Big-O focuses only on the dominant term. We drop constants and lower-order terms to capture the essential rate of growth."
+      }
+    ]
+  }
+}

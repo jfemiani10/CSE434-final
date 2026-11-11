@@ -1,0 +1,27 @@
+{
+  "concept_id": "unit_circle_sine_cosine",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:05:33Z",
+  "prompt_tokens": 276,
+  "completion_tokens": 424,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Introducing the Unit Circle",
+        "visual": "A 2D Cartesian coordinate grid with labeled X and Y axes centered on screen. A bright circle of radius 2 units labeled 'Unit Circle (r=1)' fades in. A point P starts at (2,0) on the rightmost edge of the circle, with a radial line segment connecting the origin (0,0) to P.",
+        "narration": "The unit circle is simply a circle centered at the origin with a radius of one. As a point moves around this circle, its position defines the trigonometric functions sine and cosine."
+      },
+      {
+        "title": "Decomposing into Coordinates",
+        "visual": "The point P rests at an angle of 45 degrees. A right-angled triangle forms inside the circle with vertices at the origin, (x,0), and P. The horizontal leg along the x-axis is highlighted in cyan labeled 'cos(\u03b8)', and the vertical leg is highlighted in yellow labeled 'sin(\u03b8)'. An arc angle \u03b8 is shown near the origin.",
+        "narration": "At any angle theta, the horizontal distance from the origin to the point is the cosine of theta, while the vertical distance is the sine of theta."
+      },
+      {
+        "title": "Tracing Sine and Cosine Waves",
+        "visual": "The screen splits into two panels. On the left, the unit circle with point P rotates continuously. On the right, two axes appear: a yellow sine wave plot at the top and a cyan cosine wave plot at the bottom. Dashed horizontal lines project from P to trace the yellow sine wave, while vertical projections trace the cyan cosine wave in real time.",
+        "narration": "As the point continuously rotates around the circle, tracking its vertical height traces out a smooth sine wave, while tracking its horizontal position traces out a cosine wave."
+      }
+    ]
+  }
+}

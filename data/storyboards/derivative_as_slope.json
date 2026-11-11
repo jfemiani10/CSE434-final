@@ -1,0 +1,27 @@
+{
+  "concept_id": "derivative_as_slope",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:05:21Z",
+  "prompt_tokens": 270,
+  "completion_tokens": 412,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Introducing the Curve and Secant Line",
+        "visual": "Draw a set of 2D Cartesian axes with a smooth curved function, y = x^2, drawn in blue. Place two distinct points, A and B, on the curve with a red line segment connecting them (the secant line). Below the graph, display the title text 'Average Rate of Change' in white.",
+        "narration": "To find how fast a function changes between two points, we draw a secant line connecting them. The slope of this line represents the average rate of change over that interval."
+      },
+      {
+        "title": "Approaching the Limit",
+        "visual": "Keep the axes and the blue curve. Point A remains stationary while Point B slowly moves along the curve toward Point A. The red secant line continuously updates its angle to stay connected to both points, while a right triangle appears below the line showing delta y and delta x shrinking.",
+        "narration": "As we bring the second point closer and closer to the first, the interval shrinks. We are looking at the average rate of change over smaller and smaller windows."
+      },
+      {
+        "title": "The Tangent Line and Derivative",
+        "visual": "Point B merges into Point A. The red secant line transforms into a bright yellow line touching the curve at exactly one point (the tangent line). Text at the top updates from 'Secant Line' to 'Tangent Line = Instantaneous Rate of Change', and the derivative formula 'f'(x) = lim (delta x -> 0)' appears next to the point.",
+        "narration": "At the limit, as the distance between the points reaches zero, the secant line becomes the tangent line. Its slope is the derivative: the exact instantaneous rate of change at that single point."
+      }
+    ]
+  }
+}
