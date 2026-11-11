@@ -20,19 +20,20 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 
 ## Phase 1 — Zero-shot baseline (`zero_shot`)
 Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini --limit 12` runs end to end and writes logs.
-- [ ] [J] `data/concepts.json`: 12-concept midterm subset (4 per tier)
-- [ ] [J] `config.py`: conditions, models, budgets, paths
-- [ ] [J] `llm.py`: Gemini client with response caching, token counting, retry/backoff for free-tier rate limits
-- [ ] [J] `render.py`: subprocess render with timeout → `(success, stderr_tail, video_path)`
-- [ ] [J] Error classifier → `hallucinated_api | bad_signature | latex | timeout | syntax | other`
-- [ ] [J] `logging_utils.py`: JSONL logger following the schema in `CLAUDE.md`
-- [ ] [J] Planner prompt + `planner.py` → validated storyboard JSON (pydantic); cache to `data/storyboards/`
-- [ ] [J] Zero-shot codegen prompt + `codegen.py`; strip markdown fences; enforce class name
-- [ ] [J] `pipeline.py`: concept → storyboard → per-scene code → render → stitch scene videos
-- [ ] [J] `experiments/run_ablation.py` with `--conditions`, `--models`, `--limit`, `--concepts`
-- [ ] [J] `experiments/analyze.py`: render success, first-try success, error-type breakdown, by condition × model × tier
-- [ ] [J] Unit tests: error classifier, code extraction, storyboard validation
+- [x] [J] `data/concepts.json`: 12-concept midterm subset (4 per tier)
+- [x] [J] `config.py`: conditions, models, budgets, paths
+- [x] [J] `llm.py`: Gemini client with response caching, token counting, retry/backoff for free-tier rate limits
+- [x] [J] `render.py`: subprocess render with timeout → `(success, stderr_tail, video_path)`
+- [x] [J] Error classifier → `hallucinated_api | bad_signature | latex | timeout | syntax | other`
+- [x] [J] `logging_utils.py`: JSONL logger following the schema in `CLAUDE.md`
+- [x] [J] Planner prompt + `planner.py` → validated storyboard JSON (pydantic); cache to `data/storyboards/`
+- [x] [J] Zero-shot codegen prompt + `codegen.py`; strip markdown fences; enforce class name
+- [x] [J] `pipeline.py`: concept → storyboard → per-scene code → render → stitch scene videos
+- [x] [J] `experiments/run_ablation.py` with `--conditions`, `--models`, `--limit`, `--concepts`
+- [x] [J] `experiments/analyze.py`: render success, first-try success, error-type breakdown, by condition × model × tier
+- [x] [J] Unit tests: error classifier, code extraction, storyboard validation
 - [ ] [J] Check: run on 2–3 concepts, watch the videos, read the failures
+- [ ] [J] **Blocker: Gemini free tier = 20 requests/day/model.** Full 12-concept zero-shot run needs ~42 calls. Decide: paid key / credits, or spread over days
 
 ## Phase 2 — + Error repair (`zero_shot_repair`)
 - [ ] [J] `repair.py`: render-and-repair loop (code + traceback → fixed code, ≤ N=3 retries), every attempt logged
