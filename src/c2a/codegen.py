@@ -15,7 +15,7 @@ from c2a.llm import LLM, LLMResponse
 from c2a.planner import Storyboard
 from c2a.prompting import render_prompt
 
-_FENCE = re.compile(r"```[ \t]*(?:python|py)?[ \t]*\n(.*?)```", re.DOTALL | re.IGNORECASE)
+_FENCE = re.compile(r"```[ \t]*([\w+-]*)[ \t]*\n(.*?)```", re.DOTALL)
 _SCENE_CLASS = re.compile(r"^class\s+(\w+)\s*\(\s*([\w.]*Scene)\s*\)\s*:", re.MULTILINE)
 
 
@@ -59,9 +59,15 @@ def generate_scene_code(llm: LLM, concept: dict, sb: Storyboard, scene_idx: int,
 
 
 def extract_code(text: str) -> str:
-    """Return the longest fenced code block, or the whole text if there's no fence."""
-    blocks = _FENCE.findall(text)
-    code = max(blocks, key=len) if blocks else text
+    """Return the longest Python code block, or the whole text if there's no fence.
+
+    Every fence (```bash, ```text, ...) must be matched, not just Python ones;
+    otherwise a closing fence gets mistaken for an opening one.
+    """
+    blocks = _FENCE.findall(text)  # [(lang, body), ...]
+    python = [body for lang, body in blocks if lang.lower() in {"python", "py", ""}]
+    candidates = python or [body for _, body in blocks]
+    code = max(candidates, key=len) if candidates else text
     return code.strip() + "\n"
 
 
