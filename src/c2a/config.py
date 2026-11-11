@@ -43,11 +43,17 @@ MODELS: dict[str, ModelSpec] = {
         thinking_level="low",
         notes="Gemini 3.x 'thinks' before answering; level fixed so it's the same in every run",
     ),
-    # Open models, served by Ollama (OpenAI-compatible API). Ollama's default
-    # tags are 4-bit quantized (Q4_K_M); report that in the paper.
-    "qwen": ModelSpec(
-        "qwen", "openai_compat", "qwen2.5-coder:7b", OLLAMA_URL, 8192,
-        notes="Qwen2.5-Coder-7B-Instruct, default open model (pending approval)",
+    # Codegen models for the ablation: the same model family at two sizes, so
+    # parameter count is the only difference. Served by Ollama (OpenAI-compatible
+    # API). Tags pin the exact 4-bit quantization (Q4_K_M) so every machine pulls
+    # identical weights; report the quantization in the paper.
+    "qwen7b": ModelSpec(
+        "qwen7b", "openai_compat", "qwen2.5-coder:7b-instruct-q4_K_M", OLLAMA_URL, 8192,
+        notes="Qwen2.5-Coder-7B-Instruct, ~4.7 GB",
+    ),
+    "qwen3b": ModelSpec(
+        "qwen3b", "openai_compat", "qwen2.5-coder:3b-instruct-q4_K_M", OLLAMA_URL, 8192,
+        notes="Qwen2.5-Coder-3B-Instruct, ~1.9 GB",
     ),
     "llama2": ModelSpec(
         "llama2", "openai_compat", "llama2:7b-chat", OLLAMA_URL, 4096,
@@ -55,7 +61,7 @@ MODELS: dict[str, ModelSpec] = {
     ),
 }
 
-DEFAULT_OPEN_MODEL = "qwen"
+DEFAULT_OPEN_MODEL = "qwen7b"
 # The planner always uses the same model, so every condition and every codegen
 # model gets the same storyboard for a concept (fairness rule in CLAUDE.md).
 PLANNER_MODEL = "gemini"

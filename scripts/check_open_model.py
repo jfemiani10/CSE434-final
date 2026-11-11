@@ -5,8 +5,8 @@ It only answers: is the model server up, how fast is it, and can it write
 ManimCE code that renders?
 
     ollama serve            # in another terminal, if not already running
-    python scripts/check_open_model.py                # qwen
-    python scripts/check_open_model.py --model llama2
+    python scripts/check_open_model.py                # qwen7b
+    python scripts/check_open_model.py --model qwen3b
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def extract_code(text: str) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="qwen", choices=[k for k, m in MODELS.items() if m.backend == "openai_compat"])
+    ap.add_argument("--model", default="qwen7b", choices=[k for k, m in MODELS.items() if m.backend == "openai_compat"])
     args = ap.parse_args()
     spec = MODELS[args.model]
 
