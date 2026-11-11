@@ -83,7 +83,8 @@ def main() -> int:
                 failures.append((cid, cond, m, err))
 
     print(f"\nDone in {time.time() - t0:.0f}s. Logs: {run_dir.relative_to(ROOT)}")
-    print(f"Summarize with: python experiments/analyze.py {run_dir.relative_to(ROOT)}")
+    print(f"Metrics:  python experiments/analyze.py {run_dir.relative_to(ROOT)}")
+    print(f"Browse:   python experiments/review.py {run_id}")
     if failures:
         print(f"{len(failures)} job(s) crashed (not render failures; pipeline errors):")
         for f in failures:
