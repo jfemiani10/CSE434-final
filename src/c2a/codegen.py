@@ -25,6 +25,8 @@ class GeneratedCode:
     class_name: str
     response: LLMResponse
     renamed_from: str | None   # original class name if we had to rename it
+    prompt: str = ""
+    system: str = ""
 
 
 def scene_class_name(scene_idx: int) -> str:
@@ -55,7 +57,7 @@ def generate_scene_code(llm: LLM, concept: dict, sb: Storyboard, scene_idx: int,
     resp = llm.generate(prompt, system=system)
     code = extract_code(resp.text)
     code, renamed_from = enforce_class_name(code, scene_class_name(scene_idx))
-    return GeneratedCode(code, scene_class_name(scene_idx), resp, renamed_from)
+    return GeneratedCode(code, scene_class_name(scene_idx), resp, renamed_from, prompt, system)
 
 
 def extract_code(text: str) -> str:

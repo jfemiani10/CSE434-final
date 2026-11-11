@@ -71,6 +71,8 @@ def run_concept(concept_id: str, condition_key: str, model_key: str, run_id: str
         gen = generate_scene_code(llm, concept, sb, scene_idx, condition)
         code_path = out_dir / f"scene_{scene_idx}_attempt_{attempt}.py"
         code_path.write_text(gen.code)
+        (out_dir / f"scene_{scene_idx}_attempt_{attempt}.prompt.md").write_text(
+            f"# SYSTEM\n\n{gen.system}\n\n# PROMPT\n\n{gen.prompt}\n")
         (out_dir / f"scene_{scene_idx}_attempt_{attempt}.raw.md").write_text(gen.response.text)
 
         result = render_scene(code_path, gen.class_name,
