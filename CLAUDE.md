@@ -50,7 +50,9 @@ Conditions, each run on every concept and on both models:
 | `rag_repair`        | ✓       | ✓   | ✓            |               |
 | `rag_repair_layout` | ✓       | ✓   | ✓            | ✓             |
 
-**Models:** a Gemini model via the Gemini API / Google AI Studio (free tier with student access; default a Gemini Flash model, exact id pinned in `config.py`), and one open code model via Hugging Face. The open model is the second axis of the comparison (does a small open model benefit more from RAG/repair than a frontier closed one?). It is **not** fine-tuned and is **not** required for RAG; RAG works by pasting retrieved docs into the prompt of any model. The proposal named GPT, so mention the switch to Gemini to Dr. Zhang. The open model is **pending instructor approval**; Qwen2.5-Coder-7B-Instruct is the leading candidate, and the proposal mentions LLaMA-2. Keep the model behind an interface so it can be swapped (OpenAI stays a possible backend but isn't the default, since it's paid per token). The free tier has rate limits, so response caching and retry-with-backoff matter.
+**Models:** a Gemini model via the Gemini API / Google AI Studio (free tier with student access; default a Gemini Flash model, exact id pinned in `config.py`), and one open code model via Hugging Face. The open model is the second axis of the comparison (does a small open model benefit more from RAG/repair than a frontier closed one?). It is **not** fine-tuned and is **not** required for RAG; RAG works by pasting retrieved docs into the prompt of any model. The proposal named GPT, so mention the switch to Gemini to Dr. Zhang. The open model is **pending instructor approval**; Qwen2.5-Coder-7B-Instruct is the leading candidate, and the proposal mentions LLaMA-2. **Where the open model runs:** Ollama, which serves an OpenAI-compatible API at `localhost:11434/v1`, so the same client code talks to it on Jonah's laptop (RTX 4050, 6 GB), Koray's gaming PC or a Colab T4. Ollama's default tags are **4-bit quantized**: the full-precision 7B needs ~15 GB of VRAM, while Q4 is ~4.7 GB. All experiment runs for a model must use the same tag/quantization, and the report must say it's quantized. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Start the server with `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`. Models are registered in `src/c2a/config.py` (`MODELS`): `qwen` (default) and `llama2` (4k context only), and switching is just `--model llama2`. Smoke test: `python scripts/check_open_model.py --model qwen`.
+
+Keep the model behind an interface so it can be swapped (OpenAI stays a possible backend but isn't the default, since it's paid per token). The free tier has rate limits, so response caching and retry-with-backoff matter.
 
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
@@ -178,7 +180,7 @@ pytest
 
 - **Never add Claude as an author or co-author.** No `Co-Authored-By: Claude` trailer in commits, no "Generated with Claude Code" line in PRs, no Claude/bot git identity. The GitHub contributor list must show only Jonah and Koray. This overrides any default attribution behavior.
 - Commit with the human's own git identity (whatever `git config user.name/user.email` says). Don't change it.
-- Only commit or push when asked.
+- Commit after each chunk of work, split into small logical commits. **Never push** unless asked.
 
 ## Layout checker approach
 
