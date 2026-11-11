@@ -13,12 +13,12 @@ Covers the [J] items in Phase 0, the 12-concept subset, and Phase 2 minus `repai
 - [x] [J] Create GitHub repo; commit `CLAUDE.md` + `TODO.md`
 - [ ] [J] Add Koray as collaborator (need his GitHub username)
 - [x] [J] Python env + `requirements.txt` (pin `manim`, `manim-voiceover[gtts]`, `google-genai`, `python-dotenv`, `pydantic`, `pandas`, `matplotlib`, `pytest`)
-- [ ] [J+K] Install system deps: ffmpeg, cairo/pango, LaTeX, sox (Jonah ✓ except sox; Koray ☐)
+- [ ] [J+K] Install system deps: ffmpeg, cairo/pango, LaTeX, sox (Jonah ✓; Koray ☐)
 - [ ] [J+K] Render a hand-written test scene with `manim -ql` on each person's machine (Jonah ✓; Koray ☐)
 - [x] [J] `.env.example`, `.gitignore` (`outputs/`, media, `.env`, caches)
 - [ ] [J+K] Ask Dr. Zhang to approve the open model (propose Qwen2.5-Coder-7B-Instruct instead of LLaMA-2)
 - [x] [J] Decide where the open model runs: **Ollama, 4-bit, local GPU** (Jonah's 4050 for dev; Koray's gaming PC if faster; Colab T4 as fallback). Cost: $0 (OpenRouter no longer hosts the 7B)
-- [ ] [J] Install Ollama, pull `qwen2.5-coder:7b`, run `scripts/check_open_model.py`; note tok/s
+- [ ] [J] Install Ollama (needs sudo: see README step 5), pull `qwen2.5-coder:7b`, run `scripts/check_open_model.py`; note tok/s. Not needed until the open-model runs.
 - [ ] [K] Check what GPU + VRAM his gaming PC has
 
 ## Phase 1 — Dataset
