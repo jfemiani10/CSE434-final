@@ -1,0 +1,30 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Manim / pipeline output (large, regenerable)
+media/
+outputs/
+*.mp4
+*.mov
+*.gif
+*.wav
+*.mp3
+
+# Caches (LLM response cache, built RAG index)
+.cache/
+data/manim_docs/index/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

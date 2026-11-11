@@ -1,0 +1,24 @@
+# Pinned top-level deps. Install into a virtualenv: pip install -r requirements.txt
+# System deps (ffmpeg, cairo, pango, LaTeX) must be installed first; see README.
+
+# Animation
+manim==0.22.1                  # Manim Community Edition. NOT manimgl / manimlib.
+manim-voiceover[gtts]==0.4.0   # narration; gTTS = free Google Translate TTS
+
+# LLMs
+google-genai==3.1.0            # Gemini API client (the closed model)
+
+# Plumbing
+python-dotenv==1.2.4           # loads API keys from .env
+pydantic==2.14.3               # validates LLM JSON output (storyboards)
+
+# Analysis
+pandas==3.1.1
+matplotlib==3.11.2
+
+# Tests
+pytest==9.2.0
+
+# Added later, by whoever builds that part:
+#   RAG (Koray): sentence-transformers, faiss-cpu or chromadb
+#   Open model:  transformers / huggingface_hub
