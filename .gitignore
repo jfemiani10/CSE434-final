@@ -28,3 +28,7 @@ data/manim_docs/index/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Throwaway dev runs: use a run id starting with "dev"
+results/logs/dev*/
+results/tables/dev*
