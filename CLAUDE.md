@@ -40,11 +40,12 @@ Optional augmentations to stage 2:
 
 This is a **cumulative (additive) ablation**: start from a bare zero-shot baseline and add one technique per condition, so the jump between adjacent rows is that technique's contribution *given everything above it*. (A classic leave-one-out ablation would instead start from the full pipeline and remove one part at a time; if budget allows, add `full_minus_rag` / `full_minus_fewshot` rows to check that the order of stacking isn't driving the conclusions.)
 
-Conditions, each run on every concept and on both models:
+Conditions, each run on every concept and on both models. `zero_shot_repair` is an extra row, built second and used for the midterm (baseline vs. one improvement). It also isolates repair's effect without few-shot/RAG:
 
 | Condition id        | Few-shot | RAG | Error repair | Layout repair |
 |---------------------|:-------:|:---:|:------------:|:-------------:|
 | `zero_shot`         |         |     |              |               |
+| `zero_shot_repair`  |         |     | ✓            |               |
 | `few_shot`          | ✓       |     |              |               |
 | `rag`               | ✓       | ✓   |              |               |
 | `rag_repair`        | ✓       | ✓   | ✓            |               |
