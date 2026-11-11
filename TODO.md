@@ -10,10 +10,11 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 Covers the [J] items in Phase 0, the 12-concept subset, and Phase 2 minus `repair.py`.
 
 ## Phase 0 — Setup
-- [ ] [J+K] Create GitHub repo; add both members; commit `CLAUDE.md` + `TODO.md`
-- [ ] [J] Python env + `requirements.txt` (pin `manim`, `manim-voiceover[gtts]`, `google-genai`, `python-dotenv`, `pydantic`, `pandas`, `matplotlib`, `pytest`)
-- [ ] [J+K] Install system deps: ffmpeg, cairo/pango, LaTeX (TeX Live / MiKTeX)
-- [ ] [J+K] Render a hand-written test scene with `manim -ql` on each person's machine
+- [x] [J] Create GitHub repo; commit `CLAUDE.md` + `TODO.md`
+- [ ] [J] Add Koray as collaborator (need his GitHub username)
+- [x] [J] Python env + `requirements.txt` (pin `manim`, `manim-voiceover[gtts]`, `google-genai`, `python-dotenv`, `pydantic`, `pandas`, `matplotlib`, `pytest`)
+- [ ] [J+K] Install system deps: ffmpeg, cairo/pango, LaTeX, sox (Jonah ✓ except sox; Koray ☐)
+- [ ] [J+K] Render a hand-written test scene with `manim -ql` on each person's machine (Jonah ✓; Koray ☐)
 - [x] [J] `.env.example`, `.gitignore` (`outputs/`, media, `.env`, caches)
 - [ ] [J+K] Ask Dr. Zhang to approve the open model (propose Qwen2.5-Coder-7B-Instruct instead of LLaMA-2)
 - [ ] [J+K] Decide where the open model runs (local GPU / Colab / HF Inference) and check cost

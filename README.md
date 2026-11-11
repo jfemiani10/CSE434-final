@@ -19,12 +19,13 @@ See [CLAUDE.md](CLAUDE.md) for the full design (experiment conditions, metrics, 
 ```bash
 sudo apt update
 sudo apt install -y python3.12-venv build-essential pkg-config python3-dev \
-    ffmpeg libcairo2-dev libpango1.0-dev \
+    ffmpeg sox libcairo2-dev libpango1.0-dev \
     texlive texlive-latex-extra texlive-fonts-extra
 ```
 
 - `ffmpeg` stitches frames into video.
 - `cairo` draws the shapes. `pango` lays out text.
+- `sox` is used by manim-voiceover for audio. Without it, every `manim` command prints a warning.
 - LaTeX typesets math (`MathTex`). This is the biggest download, around 1–2 GB.
 
 On macOS: `brew install py3cairo ffmpeg pango pkg-config` and install [MacTeX](https://www.tug.org/mactex/). On Windows, use WSL.
