@@ -4,7 +4,7 @@ CSE 434 (Generative AI) final project, Miami University, Fall 2026. Jonah Femian
 
 Type in a math or CS concept ("Bayes' theorem", "binary search") and get a narrated explainer video built with [Manim Community Edition](https://www.manim.community/), in the style of 3Blue1Brown.
 
-The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare five setups, from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 40 concepts and two models (Gemini and an open code model).
+The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare setups from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 40 concepts and two sizes of the same open code model (Qwen2.5-Coder 7B and 3B, run locally). Gemini writes the storyboards.
 
 ```
 concept → planner (storyboard) → code generator → render ⟲ fix errors → layout check ⟲ fix overlaps → narration → video
@@ -54,14 +54,60 @@ cp .env.example .env
 manim checkhealth
 ```
 
-**5. Open model (optional, needs an NVIDIA GPU with ≥6 GB of VRAM):**
+**5. Local models (the codegen models: Qwen2.5-Coder 7B and 3B via Ollama):** see the next section. You need an NVIDIA GPU with at least 6 GB of VRAM.
+
+## Running on the GPU box (headless Ubuntu)
+
+The experiments run on a headless Ubuntu PC with a GTX 1660 Super, over SSH. One-time setup on that machine:
 
 ```bash
-curl -fsSL https://ollama.com/install.sh | sh          # installs Ollama
-OLLAMA_CONTEXT_LENGTH=8192 ollama serve                # leave running in its own terminal
-ollama pull qwen2.5-coder:7b                           # ~4.7 GB download
-python scripts/check_open_model.py                     # asks Qwen for a scene and renders it
+nvidia-smi                       # must show the GPU. If not: sudo ubuntu-drivers install && sudo reboot
+# then do steps 1-4 above (apt packages, clone, venv, .env)
 ```
+
+The `.env` there only needs `GEMINI_API_KEY` if you'll plan *new* storyboards. Existing ones are committed in `data/storyboards/`.
+
+**Ollama as a background service.** The install script sets up a systemd service that starts on boot:
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+sudo systemctl edit ollama       # opens an editor; add these two lines, save, quit:
+#   [Service]
+#   Environment="OLLAMA_CONTEXT_LENGTH=8192"
+sudo systemctl restart ollama
+```
+
+The context-length line matters. Ollama's default context is small, and it **silently cuts off** longer prompts. The prompts would still "work", but the model would never see the end of them.
+
+```bash
+ollama pull qwen2.5-coder:7b-instruct-q4_K_M      # ~4.7 GB
+ollama pull qwen2.5-coder:3b-instruct-q4_K_M      # ~1.9 GB
+python scripts/check_open_model.py --model qwen7b # writes one scene, renders it, prints tokens/sec
+python scripts/check_open_model.py --model qwen3b
+ollama ps                                         # while a model is loaded: shows GPU use and context size
+```
+
+**Long runs: use tmux** so the run keeps going after you disconnect:
+
+```bash
+tmux new -s run                  # opens a terminal that survives logout
+source .venv/bin/activate
+python experiments/run_ablation.py --conditions zero_shot --models qwen7b qwen3b --midterm
+# detach: Ctrl+B then D. Log out; the run keeps going.
+tmux attach -t run               # later: reattach to check on it
+```
+
+**Viewing results from your laptop.** The review page and videos are on the box. Serve them over an SSH tunnel:
+
+```bash
+# on the box:
+python -m http.server 8000 --directory outputs
+# on your laptop (new terminal):
+ssh -L 8000:localhost:8000 <user>@<home-pc>
+# then open http://localhost:8000/<run_id>/review.html in your laptop's browser
+```
+
+Or copy a run to your laptop: `rsync -av <user>@<home-pc>:CSE434-final/outputs/<run_id> outputs/`. VS Code's Remote-SSH extension also works for browsing code and logs on the box.
 
 ## Usage
 
@@ -69,10 +115,10 @@ python scripts/check_open_model.py                     # asks Qwen for a scene a
 source .venv/bin/activate
 
 # one concept, end to end (prints per-scene results and the stitched video path)
-python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model gemini
+python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model qwen7b
 
-# a batch: every midterm concept, zero-shot, Gemini
-python experiments/run_ablation.py --conditions zero_shot --models gemini --midterm
+# a batch: every midterm concept, zero-shot, both Qwen sizes
+python experiments/run_ablation.py --conditions zero_shot --models qwen7b qwen3b --midterm
 
 # metrics for a run (the runner prints the exact command at the end)
 python experiments/analyze.py results/logs/<run_id>
