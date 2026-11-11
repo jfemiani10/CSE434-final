@@ -1,0 +1,28 @@
+[
+  {"id": "pythagorean_theorem", "name": "Pythagorean theorem", "tier": "concrete", "midterm": true,
+   "description": "Show why a^2 + b^2 = c^2 for a right triangle using squares built on each side."},
+  {"id": "derivative_as_slope", "name": "The derivative as slope", "tier": "concrete", "midterm": true,
+   "description": "Show secant lines on a curve approaching the tangent line as the two points get closer."},
+  {"id": "unit_circle_sine_cosine", "name": "Sine and cosine on the unit circle", "tier": "concrete", "midterm": true,
+   "description": "Show a point moving around the unit circle and how its x and y coordinates trace out cosine and sine."},
+  {"id": "area_of_circle", "name": "Area of a circle", "tier": "concrete", "midterm": true,
+   "description": "Show why a circle's area is pi r^2 by cutting it into thin wedges and rearranging them into a near-rectangle."},
+
+  {"id": "matrix_multiplication", "name": "Matrix multiplication", "tier": "structural", "midterm": true,
+   "description": "Show how each entry of a matrix product is a row of the first matrix dotted with a column of the second."},
+  {"id": "binary_search", "name": "Binary search", "tier": "structural", "midterm": true,
+   "description": "Show binary search finding a number in a sorted array by repeatedly halving the search range."},
+  {"id": "bayes_theorem", "name": "Bayes' theorem", "tier": "structural", "midterm": true,
+   "description": "Show how a prior probability is updated by evidence, using a population split into groups."},
+  {"id": "linear_transformation", "name": "Linear transformations", "tier": "structural", "midterm": true,
+   "description": "Show a 2x2 matrix transforming the plane, with the grid lines and basis vectors moving to their new positions."},
+
+  {"id": "recursion", "name": "Recursion", "tier": "abstract", "midterm": true,
+   "description": "Explain recursion with factorial, showing the call stack growing and then unwinding."},
+  {"id": "entropy", "name": "Entropy (information theory)", "tier": "abstract", "midterm": true,
+   "description": "Explain entropy as the average surprise of outcomes, comparing a fair coin to a biased coin."},
+  {"id": "big_o_notation", "name": "Big-O notation", "tier": "abstract", "midterm": true,
+   "description": "Explain Big-O by comparing how n, n log n, and n^2 grow as the input size gets large."},
+  {"id": "halting_problem", "name": "The halting problem", "tier": "abstract", "midterm": true,
+   "description": "Explain why no program can decide whether every program halts, using the self-referential contradiction."}
+]
