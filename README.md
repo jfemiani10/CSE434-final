@@ -80,4 +80,38 @@ python experiments/analyze.py results/logs/<run_id>
 pytest   # unit tests (no API calls)
 ```
 
+## Reviewing a run
+
+Every run has a **run id** (e.g. `2026-11-10_2205_de9f`). The runner prints it at the start and end. `python experiments/review.py --list` lists them all.
+
+**The easy way: the review page.**
+
+```bash
+python experiments/review.py <run_id>
+explorer.exe "$(wslpath -w outputs/<run_id>/review.html)"     # opens it in your Windows browser
+```
+
+The page has a summary table (scenes rendered per concept), then one section per concept with:
+- the concept's one-line prompt and the full storyboard the planner made;
+- for every scene: pass/fail, the error message, the video, and click-to-expand panels with the **exact prompt sent to the model**, the **code that was rendered**, the model's **raw reply** and the **error output**.
+
+**The numbers:** `python experiments/analyze.py results/logs/<run_id>` prints success rates by condition, model and tier, a count of each error type and every failure message. It also saves CSVs to `results/tables/`.
+
+**Where the files are, if you want to dig by hand:**
+
+| What | Where |
+|---|---|
+| Concept list | `data/concepts.json` |
+| Storyboard (planner output) | `data/storyboards/<concept>.json` |
+| Prompt templates | `src/c2a/prompts/*.md` |
+| Per scene, per attempt | `outputs/<run_id>/<condition>__<model>/<concept>/scene_<i>_attempt_<a>.*`: `.prompt.md` (what went in), `.raw.md` (model's reply), `.py` (code that was rendered), `.stderr.txt` (error output, failures only) |
+| Scene videos | `outputs/<run_id>/.../media/scene_<i>_attempt_<a>/videos/.../Scene<i>.mp4` |
+| Whole concept stitched together | `outputs/<run_id>/<condition>__<model>/<concept>/<concept>.mp4` (scenes that rendered) |
+| Attempt log (one JSON line per attempt) | `results/logs/<run_id>/*.jsonl` |
+| Run settings + git commit | `results/logs/<run_id>/manifest.json` |
+
+To re-render one scene by hand (e.g. after editing the code to see what a fix needs): `manim -ql outputs/<run_id>/.../scene_2_attempt_1.py Scene2`.
+
+`outputs/` is not committed (videos are big), so each person sees only runs made on their own machine. Logs in `results/logs/` are committed, except `dev*` runs.
+
 Generated code, raw LLM replies, error output and videos land in `outputs/<run_id>/...`. LLM replies are cached in `.cache/llm/`, so rerunning the same thing costs nothing. Pass `--no-cache` to force fresh calls. Use a run id starting with `dev` (`--run-id dev_mytest`) for throwaway runs; those logs aren't committed.
