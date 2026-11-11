@@ -7,6 +7,7 @@ manim-voiceover[gtts]==0.4.0   # narration; gTTS = free Google Translate TTS
 
 # LLMs
 google-genai==3.1.0            # Gemini API client (the closed model)
+openai==3.49.0                 # client for OpenAI-compatible servers (Ollama for the open model)
 
 # Plumbing
 python-dotenv==1.2.4           # loads API keys from .env
