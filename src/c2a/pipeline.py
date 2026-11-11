@@ -90,6 +90,7 @@ def run_concept(concept_id: str, condition_key: str, model_key: str, run_id: str
             render_s=round(result.render_s, 2),
             video_path=_rel(Path(result.video_path)) if result.video_path else None,
             scene_title=sb.scenes[scene_idx - 1].title,
+            model_version=r.model_version,
         ))
         outcome.scenes.append(SceneOutcome(scene_idx, result.success, attempt,
                                            result.error_type, result.video_path))

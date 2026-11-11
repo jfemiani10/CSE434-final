@@ -39,6 +39,7 @@ class AttemptRecord:
     render_s: float = 0.0
     video_path: str | None = None
     scene_title: str = ""
+    model_version: str | None = None  # provider-reported model that served the call
 
 
 class JsonlLogger:

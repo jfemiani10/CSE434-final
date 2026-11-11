@@ -37,10 +37,15 @@ class LLMResponse:
     thinking_tokens: int
     latency_s: float     # time of the original API call, even when served from cache
     cached: bool = False
+    model_version: str | None = None  # what the provider says actually served the request
 
 
 class LLMError(RuntimeError):
     pass
+
+
+class QuotaExhausted(LLMError):
+    """Daily quota used up. Retrying within this run is pointless; rerun later (cached calls are kept)."""
 
 
 class LLM:
@@ -59,6 +64,7 @@ class LLM:
         path = CACHE_DIR / f"{key}.json"
         if self.use_cache and path.exists():
             data = json.loads(path.read_text())
+            data.setdefault("model_version", None)  # older cache entries
             return LLMResponse(**{**data, "cached": True})
 
         resp = self._with_retries(lambda: self._call(prompt, system, json_schema))
@@ -105,7 +111,8 @@ class LLM:
             raise LLMError(f"Empty response from {self.spec.model_id} (finish_reason={reason})")
         u = r.usage_metadata
         return LLMResponse(text, self.spec.model_id, u.prompt_token_count or 0,
-                           u.candidates_token_count or 0, u.thoughts_token_count or 0, latency)
+                           u.candidates_token_count or 0, u.thoughts_token_count or 0, latency,
+                           model_version=getattr(r, "model_version", None))
 
     def _call_openai_compat(self, prompt, system, json_schema) -> LLMResponse:
         from openai import OpenAI
@@ -123,7 +130,8 @@ class LLM:
         latency = time.time() - t0
         u = r.usage
         return LLMResponse(r.choices[0].message.content or "", self.spec.model_id,
-                           u.prompt_tokens if u else 0, u.completion_tokens if u else 0, 0, latency)
+                           u.prompt_tokens if u else 0, u.completion_tokens if u else 0, 0, latency,
+                           model_version=getattr(r, "model", None))
 
     # -- helpers --------------------------------------------------------------
     def _with_retries(self, fn):
@@ -132,6 +140,10 @@ class LLM:
                 return fn()
             except Exception as e:  # noqa: BLE001 - classify below
                 code = _status_code(e)
+                if code == 429 and "PerDay" in str(e):
+                    # Per-minute limits clear in seconds; a per-day limit won't clear this run.
+                    raise QuotaExhausted(f"{self.spec.model_id}: daily request quota exhausted. "
+                                         f"Wait for the reset or use a paid key. ({str(e)[:200]})") from e
                 if code not in RETRYABLE_CODES or attempt == MAX_RETRIES - 1:
                     raise
                 # Exponential backoff with jitter: ~5s, 10s, 20s, 40s, 60s.
