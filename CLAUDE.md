@@ -51,13 +51,20 @@ Conditions, each run on every concept and on both models. `zero_shot_repair` is 
 | `rag_repair`        | ✓       | ✓   | ✓            |               |
 | `rag_repair_layout` | ✓       | ✓   | ✓            | ✓             |
 
-**Models:** a Gemini model via the Gemini API / Google AI Studio (free tier with student access; pinned to `gemini-3.5-flash` with `thinking_level=low` in `config.py`; as of 2026-11-10, 2.5-flash is retired for new keys and 3.8-flash timed out), and one open code model via Hugging Face. The open model is the second axis of the comparison (does a small open model benefit more from RAG/repair than a frontier closed one?). It is **not** fine-tuned and is **not** required for RAG; RAG works by pasting retrieved docs into the prompt of any model. The proposal named GPT, so mention the switch to Gemini to Dr. Zhang. The open model is **pending instructor approval**; Qwen2.5-Coder-7B-Instruct is the leading candidate, and the proposal mentions LLaMA-2. **Where the open model runs:** Ollama, which serves an OpenAI-compatible API at `localhost:11434/v1`, so the same client code talks to it on Jonah's laptop (RTX 4050, 6 GB), Koray's gaming PC or a Colab T4. Ollama's default tags are **4-bit quantized**: the full-precision 7B needs ~15 GB of VRAM, while Q4 is ~4.7 GB. All experiment runs for a model must use the same tag/quantization, and the report must say it's quantized. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Start the server with `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`. Models are registered in `src/c2a/config.py` (`MODELS`): `qwen` (default) and `llama2` (4k context only), and switching is just `--model llama2`. Smoke test: `python scripts/check_open_model.py --model qwen`.
+**Models (decided 2026-11-10):**
+- **Codegen (the ablation's model axis):** `qwen7b` and `qwen3b`, i.e. Qwen2.5-Coder-Instruct at 7B and 3B parameters. Same family and training data, so **model size is the only variable**. The research question is: do few-shot/RAG/repair help a smaller model more? Both run locally via Ollama, 4-bit (`Q4_K_M`, tags pinned in `config.py`), so there are no rate limits or API costs. The report must say they're quantized. Neither is fine-tuned; RAG just puts retrieved docs in the prompt.
+- **Planner:** `gemini-3.5-flash` (`thinking_level=low`), about one call per concept, which fits the free tier (20 requests/day/model).
+- `gemini` is still available as a codegen model (`--models gemini`) for small comparisons, but the free tier can't cover a full ablation. `llama2` (named in the proposal) is still registered: 4k context only, weak at code.
+- The proposal said "GPT + an open model". Tell Dr. Zhang about the change.
 
-Keep the model behind an interface so it can be swapped (OpenAI stays a possible backend but isn't the default, since it's paid per token). The free tier has rate limits, so response caching and retry-with-backoff matter.
+**Where the models run:** Jonah's home PC, a headless Ubuntu box with a GTX 1660 Super (6 GB VRAM, about 336 GB/s memory bandwidth). Run each model's whole experiment on that one machine, with the same Ollama version and tags. Ollama serves an OpenAI-compatible API at `localhost:11434/v1`. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Set `OLLAMA_CONTEXT_LENGTH=8192` (for the systemd service, see README). Smoke test: `python scripts/check_open_model.py --model qwen7b`.
+
+Keep every model behind the `LLM` interface (`llm.py`) so models can be swapped. API backends get response caching and retry with backoff.
 
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
 - **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). The 12 midterm storyboards were made 2026-11-10. New concepts must be planned with the same model; don't switch planners partway. The planner is about one call per concept, so it fits in the free tier.
+- **Known inconsistency (midterm only):** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be served by a newer model and could change over time. The 12 midterm storyboards (2026-11-10) may therefore come from a different underlying model than Koray's 28. **After the midterm, regenerate all 40 storyboards in one batch with one model** (`get_storyboard(c, regenerate=True)`), check that `model_version` matches across them, and rerun every condition on the new storyboards. Don't mix old and new storyboards in final results.
 - Fixed temperature (default 0.2) and seed where supported.
 - Conditions without repair get exactly 1 render attempt.
 
@@ -97,7 +104,7 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 │   └── manim_docs/           # raw docs + built index
 ├── src/c2a/
 │   ├── config.py             # condition definitions, model names, budgets
-│   ├── llm.py                # unified client: Gemini + HF open model
+│   ├── llm.py                # unified client: Gemini + Ollama (OpenAI-compatible)
 │   ├── prompts/              # prompt templates as .md/.txt, not inline strings
 │   ├── planner.py
 │   ├── codegen.py
@@ -129,10 +136,10 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 manim -ql path/to/scene.py SceneName
 
 # run the full pipeline on one concept
-python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model gemini
+python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model qwen7b
 
 # run the ablation (use --limit for quick checks; --midterm for the 12-concept subset)
-python experiments/run_ablation.py --conditions zero_shot --models gemini --midterm
+python experiments/run_ablation.py --conditions zero_shot --models qwen7b qwen3b --midterm
 
 # build tables from one or more runs' logs
 python experiments/analyze.py results/logs/<run_id>
