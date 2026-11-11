@@ -38,6 +38,7 @@ cd CSE434-final
 python3 -m venv .venv
 source .venv/bin/activate        # do this in every new terminal
 pip install -r requirements.txt
+pip install -e .                 # makes `import c2a` work from anywhere
 ```
 
 **3. API key:**
@@ -51,6 +52,15 @@ cp .env.example .env
 
 ```bash
 manim checkhealth
+```
+
+**5. Open model (optional, needs an NVIDIA GPU with ≥6 GB of VRAM):**
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh          # installs Ollama
+OLLAMA_CONTEXT_LENGTH=8192 ollama serve                # leave running in its own terminal
+ollama pull qwen2.5-coder:7b                           # ~4.7 GB download
+python scripts/check_open_model.py                     # asks Qwen for a scene and renders it
 ```
 
 ## Usage

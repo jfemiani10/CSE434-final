@@ -17,7 +17,9 @@ Covers the [J] items in Phase 0, the 12-concept subset, and Phase 2 minus `repai
 - [ ] [J+K] Render a hand-written test scene with `manim -ql` on each person's machine (Jonah ✓; Koray ☐)
 - [x] [J] `.env.example`, `.gitignore` (`outputs/`, media, `.env`, caches)
 - [ ] [J+K] Ask Dr. Zhang to approve the open model (propose Qwen2.5-Coder-7B-Instruct instead of LLaMA-2)
-- [ ] [J+K] Decide where the open model runs (local GPU / Colab / HF Inference) and check cost
+- [x] [J] Decide where the open model runs: **Ollama, 4-bit, local GPU** (Jonah's 4050 for dev; Koray's gaming PC if faster; Colab T4 as fallback). Cost: $0 (OpenRouter no longer hosts the 7B)
+- [ ] [J] Install Ollama, pull `qwen2.5-coder:7b`, run `scripts/check_open_model.py`; note tok/s
+- [ ] [K] Check what GPU + VRAM his gaming PC has
 
 ## Phase 1 — Dataset
 - [ ] [J] Write the **midterm subset** of 12 concepts (4 per tier) into `data/concepts.json` (needed for the baseline)
@@ -59,7 +61,7 @@ Covers the [J] items in Phase 0, the 12-concept subset, and Phase 2 minus `repai
 - [ ] [J] Overlap + off-frame detection with containment/group exclusions; tune thresholds on ~10 hand-labeled scenes
 - [ ] [J] Layout-repair loop (defects in plain language → LLM → re-render, ≤ M=2 retries)
 - [ ] [K] `narration.py`: convert scenes to `VoiceoverScene`, gTTS backend; sync `with self.voiceover(text=...)` blocks
-- [ ] [J] Open-model client in `llm.py` (HF transformers or inference endpoint), same interface as Gemini
+- [ ] [J] Open-model client in `llm.py` (OpenAI-compatible → Ollama), same interface as Gemini
 
 ## Phase 5 — Full experiments
 - [ ] [J+K] Run all 5 conditions × 2 models × 40 concepts (budget-check first with `--limit 5`)
@@ -79,7 +81,7 @@ Covers the [J] items in Phase 0, the 12-concept subset, and Phase 2 minus `repai
 ---
 
 ## Open questions
-- [ ] Which open model is approved? Where does it run?
+- [ ] Which open model is approved? (Running Qwen2.5-Coder-7B for now; LLaMA-2 is one flag away. Confirm with Koray + Dr. Zhang.)
 - [ ] Tell Dr. Zhang the closed model is Gemini (free student access) instead of GPT
 - [ ] Midterm report due date? Final due date? → add dates here
 - [ ] Is concatenated multi-scene video required for metrics, or per-scene only? (Plan: metrics per scene, demo stitches)
