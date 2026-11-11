@@ -57,6 +57,7 @@ Keep the model behind an interface so it can be swapped (OpenAI stays a possible
 
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
+- **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). The 12 midterm storyboards were made 2026-11-10. New concepts must be planned with the same model; don't switch planners partway. The planner is about one call per concept, so it fits in the free tier.
 - Fixed temperature (default 0.2) and seed where supported.
 - Conditions without repair get exactly 1 render attempt.
 

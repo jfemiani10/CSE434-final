@@ -74,6 +74,7 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 - [ ] [J] Install Ollama (README step 5), pull `qwen2.5-coder:7b`, run `scripts/check_open_model.py`; note tok/s
 - [ ] [J] Open-model backend in `llm.py` (OpenAI-compatible → Ollama), same interface as Gemini
 - [ ] [K] Extend `data/concepts.json` to all 40 concepts, 3 tiers (~13 each)
+- [ ] [K] Generate storyboards for the 28 new concepts with the **same planner** (`gemini-3.5-flash`): `python -c "from c2a.planner import *; [get_storyboard(c) for c in load_concepts()]"` (skips existing ones; ~20 free calls/day, so it takes 2 days). Read them over and fix any garbled text by hand
 - [ ] [K] `narration.py`: convert scenes to `VoiceoverScene`, gTTS backend; sync `with self.voiceover(text=...)` blocks
 - [ ] [J] `app/`: simple Gradio or Streamlit UI (type concept → progress log → video, with storyboard + code alongside)
 
