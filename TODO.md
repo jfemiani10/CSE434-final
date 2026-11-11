@@ -12,11 +12,13 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 - [x] [J] Python env + `requirements.txt` (pin `manim`, `manim-voiceover[gtts]`, `google-genai`, `python-dotenv`, `pydantic`, `pandas`, `matplotlib`, `pytest`)
 - [x] [J] `.env.example`, `.gitignore` (`outputs/`, media, `.env`, caches)
 - [x] [J] System deps (ffmpeg, cairo/pango, LaTeX, sox) + test render on Jonah's machine
-- [x] [J] Decide where the open model runs: **Ollama, 4-bit, local GPU** (Jonah's 4050 for dev; Koray's gaming PC if faster; Colab T4 as fallback). Cost: $0
+- [x] [J] Decide models: **codegen = Qwen2.5-Coder 7B vs 3B** (size is the only variable), 4-bit via Ollama; **planner = gemini-3.5-flash**. Cost: $0
+- [ ] [J] Set up the home PC (headless Ubuntu, GTX 1660 Super): clone, README setup, Ollama service with `OLLAMA_CONTEXT_LENGTH=8192`, pull both Qwen tags, `scripts/check_open_model.py` for each; note tok/s
+- [ ] [J] Run `zero_shot` on the 12 midterm concepts with `--models qwen7b qwen3b` on the home PC
 - [ ] [J] Add Koray as collaborator (need his GitHub username)
 - [ ] [K] System deps + test render with `manim -ql` on Koray's machine
 - [ ] [K] Check what GPU + VRAM his gaming PC has
-- [ ] [J+K] Ask Dr. Zhang to approve the open model (Qwen2.5-Coder-7B-Instruct instead of LLaMA-2) and the switch from GPT to Gemini
+- [ ] [J+K] Tell Dr. Zhang the model plan: Qwen2.5-Coder 7B vs 3B for codegen (instead of GPT + LLaMA-2), Gemini as planner
 
 ## Phase 1 — Zero-shot baseline (`zero_shot`)
 Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini --limit 12` runs end to end and writes logs.
@@ -42,7 +44,7 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 - [ ] [J] Check: a scene that crashes zero-shot gets fixed by repair
 
 ### Midterm checkpoint (after Phase 2)
-- [ ] [J] Run `zero_shot` vs `zero_shot_repair` on the 12-concept subset, Gemini only
+- [ ] [J] Run `zero_shot` vs `zero_shot_repair` on the 12-concept subset, qwen7b + qwen3b (midterm uses the current 12 storyboards)
 - [ ] [J] Figures: success-rate bar chart by tier; error-type stacked bar
 - [ ] [J+K] Pick 2–3 qualitative examples (one clean success, one hallucinated-API crash, one layout mess) and screenshot frames
 - [ ] [J+K] System diagram (pipeline figure) for Methods
@@ -71,21 +73,20 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 - [ ] [J] Layout-defect rate metric in `analyze.py`
 
 ## Phase 6 — Open model, narration, demo
-- [ ] [J] Install Ollama (README step 5), pull `qwen2.5-coder:7b`, run `scripts/check_open_model.py`; note tok/s
-- [ ] [J] Open-model backend in `llm.py` (OpenAI-compatible → Ollama), same interface as Gemini
 - [ ] [K] Extend `data/concepts.json` to all 40 concepts, 3 tiers (~13 each)
 - [ ] [K] Generate storyboards for the 28 new concepts with the **same planner** (`gemini-3.5-flash`): `python -c "from c2a.planner import *; [get_storyboard(c) for c in load_concepts()]"` (skips existing ones; ~20 free calls/day, so it takes 2 days). Read them over and fix any garbled text by hand
 - [ ] [K] `narration.py`: convert scenes to `VoiceoverScene`, gTTS backend; sync `with self.voiceover(text=...)` blocks
 - [ ] [J] `app/`: simple Gradio or Streamlit UI (type concept → progress log → video, with storyboard + code alongside)
 
 ## Phase 7 — Testing (the real experiment runs)
-Same code, same storyboards, fixed temperature/seed. Budget-check every run with `--limit 5` first.
-- [ ] [J+K] Test `zero_shot` × 2 models × 40 concepts
-- [ ] [J+K] Test `zero_shot_repair` × 2 models × 40 concepts
-- [ ] [J+K] Test `few_shot` × 2 models × 40 concepts
-- [ ] [J+K] Test `rag` × 2 models × 40 concepts
-- [ ] [J+K] Test `rag_repair` × 2 models × 40 concepts
-- [ ] [J+K] Test `rag_repair_layout` × 2 models × 40 concepts
+Same code, same storyboards, fixed temperature/seed, same machine (home PC). Check every run with `--limit 5` first.
+- [ ] [J+K] **Regenerate all 40 storyboards in one batch with one planner model** (fixes the midterm model-drift issue; see CLAUDE.md "Known inconsistency"). Check that `model_version` matches across all 40
+- [ ] [J+K] Test `zero_shot` × qwen7b/qwen3b × 40 concepts
+- [ ] [J+K] Test `zero_shot_repair` × qwen7b/qwen3b × 40 concepts
+- [ ] [J+K] Test `few_shot` × qwen7b/qwen3b × 40 concepts
+- [ ] [J+K] Test `rag` × qwen7b/qwen3b × 40 concepts
+- [ ] [J+K] Test `rag_repair` × qwen7b/qwen3b × 40 concepts
+- [ ] [J+K] Test `rag_repair_layout` × qwen7b/qwen3b × 40 concepts
 - [ ] [J+K] (If budget allows) leave-one-out rows: `full_minus_rag`, `full_minus_fewshot`
 - [ ] [J] Final results table: render success, avg repair iterations, layout-defect rate per condition × model
 - [ ] [J] Breakdown by tier (does performance drop for abstract concepts?)
@@ -101,7 +102,7 @@ Same code, same storyboards, fixed temperature/seed. Budget-check every run with
 ---
 
 ## Open questions
-- [ ] Which open model is approved? (Running Qwen2.5-Coder-7B for now; LLaMA-2 is one flag away. Confirm with Koray + Dr. Zhang.)
+- [ ] Dr. Zhang OK with Qwen 7B vs 3B instead of GPT + LLaMA-2? (LLaMA-2 and Gemini are still one flag away)
 - [ ] Midterm report due date? Final due date? → add dates here
 - [ ] Is concatenated multi-scene video required for metrics, or per-scene only? (Plan: metrics per scene, demo stitches)
 - [ ] Overlap threshold + what counts as "intentional" overlap — define with a few labeled examples before trusting the metric
