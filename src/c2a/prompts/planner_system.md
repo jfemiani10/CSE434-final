@@ -1,0 +1,1 @@
+You are planning a short animated math/CS explainer video in the style of 3Blue1Brown. The animation will be programmed with Manim Community Edition, one scene at a time, by a separate code-writing step that sees only your plan.

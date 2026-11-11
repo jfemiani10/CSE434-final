@@ -1,0 +1,32 @@
+{
+  "concept_id": "pythagorean_theorem",
+  "planner_model": "gemini-3.5-flash",
+  "created": "2026-11-11T03:02:15Z",
+  "prompt_tokens": 274,
+  "completion_tokens": 534,
+  "thinking_tokens": 0,
+  "storyboard": {
+    "scenes": [
+      {
+        "title": "Introducing the Right Triangle",
+        "visual": "A right triangle with vertices at (-1.5,-1), (1.5,-1), and (-1.5,1) appears in the center. Side labels 'a' (vertical, blue), 'b' (horizontal, green), and 'c' (hypotenuse, yellow) fade in next to their respective sides. A small right-angle symbol appears at the bottom-left corner.",
+        "narration": "In any right-angled triangle, the sides forming the right angle are called legs, while the longest side opposite the right angle is the hypotenuse."
+      },
+      {
+        "title": "Constructing the Squares",
+        "visual": "Three filled squares grow outward from the triangle's sides: a blue square of area a^2 on side 'a', a green square of area b^2 on side 'b', and a yellow square of area c^2 on side 'c'. Text labels 'a^2', 'b^2', and 'c^2' appear inside each square.",
+        "narration": "If we construct a square on each of the three sides, the Pythagorean theorem states that the combined area of the two smaller squares equals the area of the largest square."
+      },
+      {
+        "title": "Rearranging the Areas",
+        "visual": "The original triangle is duplicated to form a large square of side length (a+b). Inside this large square, four identical right triangles frame an inner tilted square of area c^2. The four triangles shift to two corners, revealing two empty regions matching sizes a^2 and b^2.",
+        "narration": "By arranging four copies of our triangle inside a larger square, we can visually see how rearranging them isolates the area c^2 into two separate squares of areas a^2 and b^2."
+      },
+      {
+        "title": "The Algebraic Equation",
+        "visual": "The geometry smoothly fades out to reveal the central equation 'a^2 + b^2 = c^2' written in large, colored LaTeX text, matching the blue, green, and yellow color scheme of the previous squares. A decorative box surrounds the final equation.",
+        "narration": "This elegant geometric property leaves us with one of the most famous equations in all of mathematics: a squared plus b squared equals c squared."
+      }
+    ]
+  }
+}
