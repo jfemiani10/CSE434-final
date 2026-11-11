@@ -65,4 +65,19 @@ python scripts/check_open_model.py                     # asks Qwen for a scene a
 
 ## Usage
 
-Coming soon. The commands are planned in CLAUDE.md under "Commands".
+```bash
+source .venv/bin/activate
+
+# one concept, end to end (prints per-scene results and the stitched video path)
+python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model gemini
+
+# a batch: every midterm concept, zero-shot, Gemini
+python experiments/run_ablation.py --conditions zero_shot --models gemini --midterm
+
+# metrics for a run (the runner prints the exact command at the end)
+python experiments/analyze.py results/logs/<run_id>
+
+pytest   # unit tests (no API calls)
+```
+
+Generated code, raw LLM replies, error output and videos land in `outputs/<run_id>/...`. LLM replies are cached in `.cache/llm/`, so rerunning the same thing costs nothing. Pass `--no-cache` to force fresh calls. Use a run id starting with `dev` (`--run-id dev_mytest`) for throwaway runs; those logs aren't committed.

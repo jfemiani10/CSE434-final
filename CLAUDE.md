@@ -51,7 +51,7 @@ Conditions, each run on every concept and on both models. `zero_shot_repair` is 
 | `rag_repair`        | ✓       | ✓   | ✓            |               |
 | `rag_repair_layout` | ✓       | ✓   | ✓            | ✓             |
 
-**Models:** a Gemini model via the Gemini API / Google AI Studio (free tier with student access; default a Gemini Flash model, exact id pinned in `config.py`), and one open code model via Hugging Face. The open model is the second axis of the comparison (does a small open model benefit more from RAG/repair than a frontier closed one?). It is **not** fine-tuned and is **not** required for RAG; RAG works by pasting retrieved docs into the prompt of any model. The proposal named GPT, so mention the switch to Gemini to Dr. Zhang. The open model is **pending instructor approval**; Qwen2.5-Coder-7B-Instruct is the leading candidate, and the proposal mentions LLaMA-2. **Where the open model runs:** Ollama, which serves an OpenAI-compatible API at `localhost:11434/v1`, so the same client code talks to it on Jonah's laptop (RTX 4050, 6 GB), Koray's gaming PC or a Colab T4. Ollama's default tags are **4-bit quantized**: the full-precision 7B needs ~15 GB of VRAM, while Q4 is ~4.7 GB. All experiment runs for a model must use the same tag/quantization, and the report must say it's quantized. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Start the server with `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`. Models are registered in `src/c2a/config.py` (`MODELS`): `qwen` (default) and `llama2` (4k context only), and switching is just `--model llama2`. Smoke test: `python scripts/check_open_model.py --model qwen`.
+**Models:** a Gemini model via the Gemini API / Google AI Studio (free tier with student access; pinned to `gemini-3.5-flash` with `thinking_level=low` in `config.py`; as of 2026-11-10, 2.5-flash is retired for new keys and 3.8-flash timed out), and one open code model via Hugging Face. The open model is the second axis of the comparison (does a small open model benefit more from RAG/repair than a frontier closed one?). It is **not** fine-tuned and is **not** required for RAG; RAG works by pasting retrieved docs into the prompt of any model. The proposal named GPT, so mention the switch to Gemini to Dr. Zhang. The open model is **pending instructor approval**; Qwen2.5-Coder-7B-Instruct is the leading candidate, and the proposal mentions LLaMA-2. **Where the open model runs:** Ollama, which serves an OpenAI-compatible API at `localhost:11434/v1`, so the same client code talks to it on Jonah's laptop (RTX 4050, 6 GB), Koray's gaming PC or a Colab T4. Ollama's default tags are **4-bit quantized**: the full-precision 7B needs ~15 GB of VRAM, while Q4 is ~4.7 GB. All experiment runs for a model must use the same tag/quantization, and the report must say it's quantized. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Start the server with `OLLAMA_CONTEXT_LENGTH=8192 ollama serve`. Models are registered in `src/c2a/config.py` (`MODELS`): `qwen` (default) and `llama2` (4k context only), and switching is just `--model llama2`. Smoke test: `python scripts/check_open_model.py --model qwen`.
 
 Keep the model behind an interface so it can be swapped (OpenAI stays a possible backend but isn't the default, since it's paid per token). The free tier has rate limits, so response caching and retry-with-backoff matter.
 
@@ -115,7 +115,7 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 │   ├── tables/
 │   ├── figures/
 │   └── human_ratings.csv
-├── outputs/<run_id>/<concept_id>/   # generated code + mp4s (gitignored)
+├── outputs/<run_id>/<condition>__<model>/<concept_id>/   # generated code, raw LLM replies, stderr, mp4s (gitignored)
 ├── app/                      # demo: type a concept, get a video
 ├── report/                   # midterm + final report sources
 └── tests/
@@ -128,13 +128,13 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 manim -ql path/to/scene.py SceneName
 
 # run the full pipeline on one concept
-python -m c2a.pipeline --concept bayes_theorem --condition rag_repair --model gemini
+python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model gemini
 
-# run the ablation (use --limit for quick checks)
-python experiments/run_ablation.py --conditions zero_shot rag_repair --models gemini --limit 10
+# run the ablation (use --limit for quick checks; --midterm for the 12-concept subset)
+python experiments/run_ablation.py --conditions zero_shot --models gemini --midterm
 
-# build tables + figures from logs
-python experiments/analyze.py results/logs/
+# build tables from one or more runs' logs
+python experiments/analyze.py results/logs/<run_id>
 
 pytest
 ```
@@ -163,6 +163,8 @@ pytest
 }
 ```
 
+Logs live in `results/logs/<run_id>/<condition>__<model>__<concept>.jsonl` (one file per job, so parallel workers never share a file), plus a `manifest.json` with the args and git commit. Run ids starting with `dev` are gitignored. Use them for throwaway tests. Extra fields beyond the example (`model_key`, `thinking_tokens`, `llm_cached`, `render_s`, `video_path`, `scene_title`) are defined in `logging_utils.AttemptRecord`.
+
 **Do not change this schema without updating `analyze.py`.** Append new fields; don't rename existing ones.
 
 ## Coding conventions
@@ -172,6 +174,7 @@ pytest
 - Each generated scene = exactly one `Scene` (or `VoiceoverScene`) subclass, with the class name dictated by the pipeline (e.g. `Scene2`) so the renderer knows what to call.
 - Frame bounds: x ∈ [−7.11, 7.11], y ∈ [−4, 4] (default 16:9, `frame_height = 8`). Tell the LLM this explicitly.
 - Every render is a subprocess with a timeout (default 120 s). Never `exec` LLM code in the main process.
+- Post-processing of generated code is deliberately minimal (extract the code block, rename the Scene class). It applies to every condition, so it must not quietly fix the errors being measured.
 - Every LLM call and render attempt goes through the logger. If it isn't logged, it didn't happen.
 - Cache LLM responses (keyed by prompt hash + model + temperature) so reruns of analysis don't re-spend API money.
 - `outputs/` and media files are gitignored; `results/` (logs, tables, figures) is committed.
@@ -208,3 +211,7 @@ Instrument the scene rather than analyzing pixels:
 - Manim's API changed a lot between versions; old tutorials and LLM training data use deprecated calls (`get_graph`, `ShowCreation`, `TextMobject`, `TexMobject`). Pin the ManimCE version in requirements and say it in prompts.
 - `manim-voiceover` can use gTTS (free) or OpenAI TTS. Use gTTS for experiments; narration doesn't affect the render/layout metrics.
 - Rendering is the bottleneck. Parallelize across concepts with a process pool, not threads.
+- Manim **exits 0 even when the requested Scene class doesn't exist**: it renders whatever class it finds. `render.py` therefore checks that `<SceneName>.mp4` was written by this render, not just the return code.
+- `Mobject.__getattr__` fabricates any `get_*` method, so hallucinated calls like `Axes.get_graph(f)` fail as a **TypeError** ("getter() takes 1 positional argument"), not an AttributeError. The classifier maps this to `hallucinated_api`.
+- Rich tracebacks wrap at terminal width and truncate error messages. `render.py` sets `COLUMNS=400` for the subprocess.
+- Gemini 3.x spends "thinking" tokens before answering. They count toward rate limits and are logged as `thinking_tokens`.
