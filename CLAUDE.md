@@ -210,7 +210,16 @@ Instrument the scene rather than analyzing pixels:
 
 ## Course deliverables
 
-- **Midterm check-in report** (2–3 pages, 11 pt, 1" margins, single column; team name and roles at top). Sections: Project Overview, Dataset, Methods (with system diagram), Preliminary Results, Next Steps. Rubric: Problem 15 / Dataset 15 / Methods 25 / Prelim Results 25 / Writing 10 / Next Steps 10. **The midterm needs real numbers**: at least a baseline vs. one improvement table, plus qualitative success/failure examples with images.
+- **Midterm check-in report** (source: `report/reference/course/midterm_requirements.pdf`, kept local and not committed). 2–3 pages, 11 pt, 1" margins, single column, figures encouraged, **team name and roles at the top of page 1**. Purpose: show progress, and **get feedback on data, models and experimental design**. That's the place to explain the model-plan change. Sections and page budgets:
+  1. **Project Overview** (½ p): research question, motivation, link to course topics.
+  2. **Dataset** (½ p): source, size, preprocessing, ethical considerations.
+  3. **Methods** (1 p): technical design, model/prompt strategy, **system diagram**.
+  4. **Preliminary Results** (½–1 p): metrics, qualitative outputs, early insights.
+  5. **Next Steps** (½ p): planned improvements, evaluation strategy, open questions.
+
+  Rubric (100): Problem Definition 15 (clear question, motivation, relevance to course) · Dataset 15 (appropriate, well-described, ethically considered) · Methodology 25 (sound and *creative* technical approach) · Preliminary Results 25 (evidence of progress *with interpretation and visuals*) · Writing & Organization 10 · Reflection & Next Steps 10 (realistic, thoughtful plan).
+  The example report (`report/reference/course/midterm_example.pdf`) is a LaTeX article: title, names, roman-numeral sections (I. Project Overview … V. Next Steps), one full-width system-diagram figure with a caption, qualitative examples written as prose (one success, one contrasting failure), and a small booktabs-style table of baseline vs. improved method. Match that style.
+  **Changes since the proposal must be explained** (`report/reference/Project_Proposal_Femiani_Bayram.pdf`). The proposal said OpenAI API + LangChain + Hugging Face, with GPT and LLaMA-2 or a newer code model. Now: Qwen2.5-Coder 7B vs 3B via Ollama, a Gemini planner, and no LangChain.
 - **Final:** full ablation table (technique × model), human ratings by tier, success/failure gallery, working demo, final report.
 
 ## Gotchas

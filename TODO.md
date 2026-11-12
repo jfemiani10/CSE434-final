@@ -48,11 +48,12 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 - [ ] [J] Figures: success-rate bar chart by tier; error-type stacked bar
 - [ ] [J+K] Pick 2–3 qualitative examples (one clean success, one hallucinated-API crash, one layout mess) and screenshot frames
 - [ ] [J+K] System diagram (pipeline figure) for Methods
-- [ ] [J+K] Write midterm report (2–3 pp, 11 pt, 1" margins, team name + roles on top)
+- [ ] [J+K] Set up LaTeX report in `report/midterm/` (Overleaf or local), matching the example's style (see CLAUDE.md "Course deliverables")
+- [ ] [J+K] Write midterm report (2–3 pp, 11 pt, 1" margins, single column, team name + roles on top). Page budgets: Overview ½, Dataset ½, Methods 1, Results ½–1, Next Steps ½
   - [ ] Overview: research question, motivation, link to course topics (prompting, RAG, self-refinement, code generation)
   - [ ] Dataset: concept tiers, Manim docs corpus, preprocessing, ethics (no personal data; risk of confident but wrong math explanations → human correctness ratings)
-  - [ ] Methods: pipeline, prompt strategy, repair loop, diagram
-  - [ ] Preliminary Results: table + figures + qualitative examples + interpretation
+  - [ ] Methods: pipeline, prompt strategy, repair loop, diagram; **changes since the proposal** (Gemini planner, Qwen 7B vs 3B via Ollama, no LangChain) and why (free-tier limits, cost, size as a clean variable)
+  - [ ] Preliminary Results: table + figures + qualitative examples (one success, one contrasting failure, as prose with frames) + **interpretation** (rubric weights it)
   - [ ] Next Steps: few-shot, RAG, layout repair, open model, voiceover, human eval, demo
 - [ ] [J+K] Proofread against the rubric; submit
 
