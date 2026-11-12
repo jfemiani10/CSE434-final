@@ -43,7 +43,7 @@ Goal: `python experiments/run_ablation.py --conditions zero_shot --models gemini
 - [ ] [J] Avg repair iterations metric in `analyze.py`
 - [ ] [J] Check: a scene that crashes zero-shot gets fixed by repair
 
-### Midterm checkpoint (after Phase 2)
+### Midterm checkpoint (after Phase 2), due Fri 2026-11-13 midnight
 - [ ] [J] Run `zero_shot` vs `zero_shot_repair` on the 12-concept subset, qwen7b + qwen3b (midterm uses the current 12 storyboards)
 - [ ] [J] Figures: success-rate bar chart by tier; error-type stacked bar
 - [ ] [J+K] Pick 2–3 qualitative examples (one clean success, one hallucinated-API crash, one layout mess) and screenshot frames
@@ -104,6 +104,7 @@ Same code, same storyboards, fixed temperature/seed, same machine (home PC). Che
 
 ## Open questions
 - [ ] Dr. Zhang OK with Qwen 7B vs 3B instead of GPT + LLaMA-2? (LLaMA-2 and Gemini are still one flag away)
-- [ ] Midterm report due date? Final due date? → add dates here
+- [x] Midterm report due **Friday 2026-11-13, midnight**
+- [ ] Final due date? → add here
 - [ ] Is concatenated multi-scene video required for metrics, or per-scene only? (Plan: metrics per scene, demo stitches)
 - [ ] Overlap threshold + what counts as "intentional" overlap — define with a few labeled examples before trusting the metric
