@@ -41,7 +41,7 @@
 % ---------------------------------------------------------------------------
 \section{Project Overview}
 
-Given a short description of a math or CS concept (e.g.\ ``Bayes' theorem''), our system writes a short explainer video in the style of 3Blue1Brown by having an LLM plan a storyboard and then write Manim Community Edition (ManimCE) code for each scene.
+Given a short description of a math or CS concept (e.g.\ ``binary search''), our system writes a short explainer video in the style of 3Blue1Brown by having an LLM plan a storyboard and then write Manim Community Edition (ManimCE) code for each scene.
 LLM-written animation code fails in two characteristic ways: it calls \emph{hallucinated or outdated Manim APIs} (the code crashes), and it produces \emph{bad layouts} (objects overlap or leave the frame).
 Our research question is: \textbf{which generative techniques make LLM-written animation code render reliably and look clear?}
 We answer it with a cumulative ablation that starts from a zero-shot baseline and adds one technique at a time: error-driven self-repair, few-shot examples, retrieval-augmented generation (RAG) over the ManimCE docs, and a layout-repair loop driven by a bounding-box checker.
@@ -51,16 +51,16 @@ The deliverable is a measured results table, not just a demo, so every LLM call 
 % ---------------------------------------------------------------------------
 \section{Dataset}
 
-\textbf{Concepts.} We curated 12 concepts in three difficulty tiers of four each, chosen by how directly the idea maps to pictures:
-\emph{concrete} (Pythagorean theorem, derivative as slope, sine/cosine on the unit circle, area of a circle),
-\emph{structural} (matrix multiplication, binary search, Bayes' theorem, linear transformations), and
-\emph{abstract} (recursion, entropy, Big-O notation, the halting problem).
+\textbf{Concepts.} We curated 6 concepts in three difficulty tiers of two each, chosen by how directly the idea maps to pictures:
+\emph{concrete} (Pythagorean theorem, derivative as slope),
+\emph{structural} (matrix multiplication, binary search), and
+\emph{abstract} (recursion, Big-O notation).
 Each entry is a JSON record with an id, a name, a tier and a one-sentence prompt.
 The tiers let us ask whether performance drops as concepts get less visual.
 
-\textbf{Storyboards.} For each concept the planner produces a storyboard of 3--4 scenes (42 scenes in total), each with a title, a visual description and narration.
+\textbf{Storyboards.} For each concept the planner produces a storyboard of 3--4 scenes (20 scenes in total), each with a title, a visual description and narration.
 Storyboards are validated against a schema and cached, so every condition generates code for exactly the same scenes and only the code-generation step differs.
-All 12 were produced in one batch on 2026-11-10 by the same model.
+All 6 were produced in one batch on 2026-11-10 by the same model.
 
 \textbf{Retrieval corpus (planned).} The ManimCE documentation and example gallery (MIT license), pinned to the same version we render with (v0.22.1), chunked and embedded for RAG.
 
@@ -121,13 +121,13 @@ Every attempt is written as one JSONL line (tokens, latency, error, code path), 
 \textbf{Changes since the proposal} (approved by Dr.~Zhang).
 (1)~\emph{Models:} the proposal compared GPT with an open model (LLaMA-2/Qwen). We now use Gemini 3.5 Flash for both planning and code generation. We tried Qwen2.5-Coder (7B and 3B, 4-bit via Ollama) and its Manim code was too poor to make the comparison informative; open models remain wired into our LLM interface as optional extras.
 (2)~\emph{No LangChain:} plain Python gives us exact logging of every prompt, reply and token count, which the ablation needs.
-(3)~\emph{12 concepts instead of 40:} each concept costs several LLM calls and renders per condition; 12 balanced concepts let us run every condition rather than a few conditions on many concepts.
+(3)~\emph{6 concepts instead of 40:} each concept costs several LLM calls and renders per condition, and every rendered video needs human rating; 6 balanced concepts (2 per tier, 20 scenes) let us run and hand-rate every condition rather than a few conditions on many concepts.
 One caveat: Google bills our \texttt{gemini-3.5-flash} requests against a \texttt{gemini-3.6-flash} quota, so the name may be an alias for a newer model. We log the provider-reported model version on every call to detect drift.
 
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-The baseline pipeline runs end to end. Our first zero-shot run stopped at the Gemini free tier's 20-requests-per-day limit after 14 of 42 scenes (7 of 12 concepts started); we have since moved to a paid key for the full runs. Table~\ref{tab:results} summarizes what we have.
+The baseline pipeline runs end to end. Our first zero-shot run stopped at the Gemini free tier's 20-requests-per-day limit after 11 of the 20 scenes in our final concept set; we have since moved to a paid key for the full runs. Table~\ref{tab:results} summarizes what we have.
 
 \begin{table}[h]
 \centering
@@ -136,19 +136,19 @@ The baseline pipeline runs end to end. Our first zero-shot run stopped at the Ge
 \toprule
 Condition & Scenes & Render success & First-try success & Avg.\ repairs \\
 \midrule
-\texttt{zero\_shot} (partial) & 14 & 64.3\% (9/14) & 64.3\% & -- \\
-\quad concrete   & 10 & 60.0\% (6/10) & 60.0\% & -- \\
-\quad structural &  3 & 66.7\% (2/3)  & 66.7\% & -- \\
-\quad abstract   &  1 & 100\% (1/1)   & 100\%  & -- \\
-\texttt{zero\_shot} (full, 42 scenes)  & \todo{} & \todo{} & \todo{} & -- \\
-\texttt{zero\_shot\_repair} (42 scenes) & \todo{} & \todo{} & \todo{} & \todo{} \\
+\texttt{zero\_shot} (partial) & 11 & 72.7\% (8/11) & 72.7\% & -- \\
+\quad concrete   & 7 & 71.4\% (5/7) & 71.4\% & -- \\
+\quad structural & 3 & 66.7\% (2/3) & 66.7\% & -- \\
+\quad abstract   & 1 & 100\% (1/1)  & 100\%  & -- \\
+\texttt{zero\_shot} (full, 20 scenes)  & \todo{} & \todo{} & \todo{} & -- \\
+\texttt{zero\_shot\_repair} (20 scenes) & \todo{} & \todo{} & \todo{} & \todo{} \\
 \bottomrule
 \end{tabular}
 \caption{Render results with Gemini 3.5 Flash. The partial run's tier numbers are based on very few scenes and are not yet meaningful.}
 \label{tab:results}
 \end{table}
 
-\textbf{Error types.} All five failures were API misuse, not syntax or LaTeX problems: three \texttt{hallucinated\_api} (e.g.\ \texttt{axes.get\_secant\_line(x, curve, dx=\ldots)} and \texttt{get\_tangent\_line(\ldots, graph=\ldots)}, which do not exist in ManimCE, and an undefined easing function \texttt{easeInOutCubic}) and two \texttt{bad\_signature} (keyword arguments that the real class does not accept, e.g.\ \texttt{grid\_stroke\_width}). This supports our premise: the model writes plausible Python but mixes in API names from older Manim versions or invents them. Since each error message names the bad call, these are exactly the failures a traceback-driven repair loop should fix, and also what RAG over the real docs should prevent.
+\textbf{Error types.} All three failures were API misuse, not syntax or LaTeX problems: two \texttt{hallucinated\_api} (\texttt{axes.get\_secant\_line(x, curve, dx=\ldots)} and \texttt{get\_tangent\_line(\ldots, graph=\ldots)}, which do not exist in ManimCE) and one \texttt{bad\_signature} (a keyword argument the real class does not accept, \texttt{grid\_stroke\_width}). This supports our premise: the model writes plausible Python but mixes in API names from older Manim versions or invents them. Since each error message names the bad call, these are exactly the failures a traceback-driven repair loop should fix, and also what RAG over the real docs should prevent.
 
 \begin{figure}[h]
 \centering
@@ -172,13 +172,13 @@ Condition & Scenes & Render success & First-try success & Avg.\ repairs \\
 \section{Next Steps}
 
 \begin{itemize}
-  \item \textbf{Finish the midterm comparison:} complete \texttt{zero\_shot} on all 42 scenes and run \texttt{zero\_shot\_repair} (traceback in, fixed code out, up to 3 retries), then rate the videos.
+  \item \textbf{Finish the midterm comparison:} complete \texttt{zero\_shot} on all 20 scenes and run \texttt{zero\_shot\_repair} (traceback in, fixed code out, up to 3 retries), then rate the videos.
   \item \textbf{Few-shot and RAG} (Koray): 3--5 curated modern ManimCE example scenes; a retriever over the pinned ManimCE docs, checked on whether it returns the right classes (e.g.\ \texttt{Axes.plot} for graphs).
   \item \textbf{Layout checker and repair:} instrument \texttt{Scene.play} to snapshot every object's bounding box, flag off-frame objects and overlaps (ignoring intentional containment such as a label inside its shape), and describe defects to the LLM in plain language. We will tune the overlap threshold on about ten hand-labeled scenes before trusting the metric.
   \item \textbf{Evaluation:} the full six-condition ablation, results by tier, token cost and latency per condition, human ratings blind to condition with inter-rater agreement, and a success/failure gallery.
   \item \textbf{Narration and demo:} gTTS voiceover via \texttt{manim-voiceover}, and a simple web demo (type a concept, get a video).
 \end{itemize}
 
-\textbf{Open questions for feedback.} Is 12 concepts (42 scenes) enough to separate conditions, or should we add more scenes per concept? Is a bounding-box layout check a reasonable proxy for visual clarity, or should clarity rest only on human ratings? Should the stacking order of the ablation be checked with leave-one-out rows?
+\textbf{Open questions for feedback.} Is 6 concepts (20 scenes) enough to separate conditions, or should we add more scenes per concept? Is a bounding-box layout check a reasonable proxy for visual clarity, or should clarity rest only on human ratings? Should the stacking order of the ablation be checked with leave-one-out rows?
 
 \end{document}
