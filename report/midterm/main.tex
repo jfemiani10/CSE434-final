@@ -21,6 +21,7 @@
 
 % Marks text still to be filled in before submission.
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\tbd}{\textcolor{red}{?}}
 
 \title{\vspace{-2em}Concept-to-Animation: Reliable LLM-Generated Manim Explainer Videos\\[0.3em]
 \large CSE 434 Midterm Check-in Report}
@@ -127,26 +128,33 @@ One caveat: Google bills our \texttt{gemini-3.5-flash} requests against a \textt
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-The baseline pipeline runs end to end. Our first zero-shot run stopped at the Gemini free tier's 20-requests-per-day limit after 11 of the 20 scenes in our final concept set; we have since moved to a paid key for the full runs. Table~\ref{tab:results} summarizes what we have.
+The baseline pipeline runs end to end. Our first zero-shot run stopped at the Gemini free tier's 20-requests-per-day limit after 11 of the 20 scenes in our final concept set (8 of those 11 rendered); we have since moved to a paid key for the full runs. Table~\ref{tab:results} reports both conditions on all 20 scenes.
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-Condition & Scenes & Render success & First-try success & Avg.\ repairs \\
+ & \multicolumn{3}{c}{Automatic (all 20 scenes)} & \multicolumn{2}{c}{Human, 1--5 (rendered scenes)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}
+Condition & Render success & First-try success & Avg.\ repairs & Correctness & Clarity \\
 \midrule
-\texttt{zero\_shot} (partial) & 11 & 72.7\% (8/11) & 72.7\% & -- \\
-\quad concrete   & 7 & 71.4\% (5/7) & 71.4\% & -- \\
-\quad structural & 3 & 66.7\% (2/3) & 66.7\% & -- \\
-\quad abstract   & 1 & 100\% (1/1)  & 100\%  & -- \\
-\texttt{zero\_shot} (full, 20 scenes)  & \todo{} & \todo{} & \todo{} & -- \\
-\texttt{zero\_shot\_repair} (20 scenes) & \todo{} & \todo{} & \todo{} & \todo{} \\
+\texttt{zero\_shot}        & \tbd\ (\tbd/20) & \tbd & --   & \tbd & \tbd \\
+\quad concrete (7)         & \tbd & \tbd & --   & \tbd & \tbd \\
+\quad structural (6)       & \tbd & \tbd & --   & \tbd & \tbd \\
+\quad abstract (7)         & \tbd & \tbd & --   & \tbd & \tbd \\
+\addlinespace
+\texttt{zero\_shot\_repair} & \tbd\ (\tbd/20) & \tbd & \tbd & \tbd & \tbd \\
+\quad concrete (7)         & \tbd & \tbd & \tbd & \tbd & \tbd \\
+\quad structural (6)       & \tbd & \tbd & \tbd & \tbd & \tbd \\
+\quad abstract (7)         & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \bottomrule
 \end{tabular}
-\caption{Render results with Gemini 3.5 Flash. The partial run's tier numbers are based on very few scenes and are not yet meaningful.}
+\caption{Gemini 3.5 Flash on all 20 scenes (6 concepts). First-try success equals render success for \texttt{zero\_shot}, which gets one attempt; for \texttt{zero\_shot\_repair} it is the same first attempt, so the gap between the two columns is what repair adds. Avg.\ repairs counts extra attempts over scenes that eventually rendered. Human scores are the mean of both raters over rendered scenes only (a scene that fails to render has no video to rate), rated blind to condition.}
 \label{tab:results}
 \end{table}
+% Partial run (2026-11-10, 11/20 scenes, superseded by the full run): 72.7% (8/11) overall;
+% concrete 5/7, structural 2/3, abstract 1/1.
 
 \textbf{Error types.} All three failures were API misuse, not syntax or LaTeX problems: two \texttt{hallucinated\_api} (\texttt{axes.get\_secant\_line(x, curve, dx=\ldots)} and \texttt{get\_tangent\_line(\ldots, graph=\ldots)}, which do not exist in ManimCE) and one \texttt{bad\_signature} (a keyword argument the real class does not accept, \texttt{grid\_stroke\_width}). This supports our premise: the model writes plausible Python but mixes in API names from older Manim versions or invents them. Since each error message names the bad call, these are exactly the failures a traceback-driven repair loop should fix, and also what RAG over the real docs should prevent.
 
