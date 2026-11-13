@@ -99,7 +99,7 @@ CONDITIONS: dict[str, Condition] = {c.key: c for c in [
 ]}
 
 # Which conditions the code can actually run yet. Grows as phases land.
-IMPLEMENTED_CONDITIONS = {"zero_shot"}
+IMPLEMENTED_CONDITIONS = {"zero_shot", "zero_shot_repair"}
 
 
 # --- rendering ---------------------------------------------------------------

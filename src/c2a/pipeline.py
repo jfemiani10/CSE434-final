@@ -21,6 +21,7 @@ from c2a.llm import LLM
 from c2a.logging_utils import AttemptRecord, JsonlLogger
 from c2a.planner import get_concept, get_storyboard
 from c2a.render import render_scene
+from c2a.repair import repair_scene_code
 
 
 @dataclass
@@ -66,34 +67,16 @@ def run_concept(concept_id: str, condition_key: str, model_key: str, run_id: str
     outcome = ConceptOutcome(concept_id, condition_key, model_key)
 
     for scene_idx in range(1, len(sb.scenes) + 1):
-        # Zero-shot: exactly one attempt. The repair loop (Phase 2) will wrap this.
-        attempt = 1
+        # Attempt 1 is the same prompt in every condition without few-shot/RAG, so it's
+        # served from the cache and identical across zero_shot and zero_shot_repair.
         gen = generate_scene_code(llm, concept, sb, scene_idx, condition)
-        code_path = out_dir / f"scene_{scene_idx}_attempt_{attempt}.py"
-        code_path.write_text(gen.code)
-        (out_dir / f"scene_{scene_idx}_attempt_{attempt}.prompt.md").write_text(
-            f"# SYSTEM\n\n{gen.system}\n\n# PROMPT\n\n{gen.prompt}\n")
-        (out_dir / f"scene_{scene_idx}_attempt_{attempt}.raw.md").write_text(gen.response.text)
-
-        result = render_scene(code_path, gen.class_name,
-                              out_dir / "media" / f"scene_{scene_idx}_attempt_{attempt}",
-                              quality=RENDER_QUALITY)
-        if not result.success:
-            (out_dir / f"scene_{scene_idx}_attempt_{attempt}.stderr.txt").write_text(result.stderr_tail)
-
-        r = gen.response
-        logger.log(AttemptRecord(
-            run_id=run_id, concept_id=concept_id, tier=concept["tier"], condition=condition_key,
-            model=r.model_id, scene_idx=scene_idx, attempt=attempt, phase="render",
-            success=result.success, error_type=result.error_type, error_msg=result.error_msg,
-            prompt_tokens=r.prompt_tokens, completion_tokens=r.completion_tokens,
-            latency_s=round(r.latency_s, 2), code_path=_rel(code_path),
-            model_key=model_key, thinking_tokens=r.thinking_tokens, llm_cached=r.cached,
-            render_s=round(result.render_s, 2),
-            video_path=_rel(Path(result.video_path)) if result.video_path else None,
-            scene_title=sb.scenes[scene_idx - 1].title,
-            model_version=r.model_version,
-        ))
+        for attempt in range(1, condition.max_render_attempts + 1):
+            if attempt > 1:
+                gen = repair_scene_code(llm, gen, result, scene_idx, attempt - 1)
+            result = _render_and_log(gen, attempt, scene_idx, out_dir, logger, run_id, concept,
+                                     condition_key, model_key, sb.scenes[scene_idx - 1].title)
+            if result.success:
+                break
         outcome.scenes.append(SceneOutcome(scene_idx, result.success, attempt,
                                            result.error_type, result.video_path))
 
@@ -101,6 +84,35 @@ def run_concept(concept_id: str, condition_key: str, model_key: str, run_id: str
     if videos:
         outcome.final_video = stitch_videos(videos, out_dir / f"{concept_id}.mp4")
     return outcome
+
+
+def _render_and_log(gen, attempt: int, scene_idx: int, out_dir: Path, logger: JsonlLogger,
+                    run_id: str, concept: dict, condition_key: str, model_key: str,
+                    scene_title: str):
+    """Save the attempt's files, render it, and write one log line."""
+    stem = out_dir / f"scene_{scene_idx}_attempt_{attempt}"
+    code_path = stem.with_suffix(".py")
+    code_path.write_text(gen.code)
+    stem.with_suffix(".prompt.md").write_text(f"# SYSTEM\n\n{gen.system}\n\n# PROMPT\n\n{gen.sent_prompt}\n")
+    stem.with_suffix(".raw.md").write_text(gen.response.text)
+
+    result = render_scene(code_path, gen.class_name, out_dir / "media" / stem.name, quality=RENDER_QUALITY)
+    if not result.success:
+        stem.with_suffix(".stderr.txt").write_text(result.stderr_tail)
+
+    r = gen.response
+    logger.log(AttemptRecord(
+        run_id=run_id, concept_id=concept["id"], tier=concept["tier"], condition=condition_key,
+        model=r.model_id, scene_idx=scene_idx, attempt=attempt, phase="render",
+        success=result.success, error_type=result.error_type, error_msg=result.error_msg,
+        prompt_tokens=r.prompt_tokens, completion_tokens=r.completion_tokens,
+        latency_s=round(r.latency_s, 2), code_path=_rel(code_path),
+        model_key=model_key, thinking_tokens=r.thinking_tokens, llm_cached=r.cached,
+        render_s=round(result.render_s, 2),
+        video_path=_rel(Path(result.video_path)) if result.video_path else None,
+        scene_title=scene_title, model_version=r.model_version,
+    ))
+    return result
 
 
 def stitch_videos(videos: list[Path], dest: Path) -> str | None:
