@@ -1,6 +1,6 @@
 """Run concepts x conditions x models and log every render attempt.
 
-    python experiments/run_ablation.py --conditions zero_shot --models gemini --limit 12
+    python experiments/run_ablation.py --conditions zero_shot --models gemini --workers 1
 
 Storyboards are planned first, one at a time (so parallel workers never plan
 the same concept twice), then jobs run in a process pool. Rendering is

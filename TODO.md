@@ -5,22 +5,22 @@ Owner tags: **[J]** Jonah, **[K]** Koray, **[J+K]** both.
 
 Phases follow the build order: one phase per ablation layer, each ending with a quick check that the new layer works. The real experiment runs are all in the testing phase, so every condition is measured the same way with the same code.
 
-**Decisions (2026-11-13, confirmed with Dr. Zhang):** model swap from the proposal is OK → **Gemini 3.5 Flash** for planner + codegen (Qwen tried, too weak). **12 concepts total** (not 40). 4-bit quantization is OK if a local model is ever used. LangChain not expected. **Human ratings are part of the midterm.** Submit the PDF (required) plus the repo link and sample videos.
+**Decisions (2026-11-13, confirmed with Dr. Zhang):** model swap from the proposal is OK → **Gemini 3.5 Flash** for planner + codegen (Qwen tried, too weak). **6 concepts total, 2 per tier** (Pythagorean theorem, derivative as slope; matrix multiplication, binary search; recursion, Big-O): 20 scenes. 4-bit quantization is OK if a local model is ever used. LangChain not expected. **Human ratings are part of the midterm.** Submit the PDF (required) plus the repo link and sample videos.
 
 ---
 
 ## Midterm — due TONIGHT, Fri 2026-11-13, midnight
 - [ ] [J] **Enable billing on the Gemini API key** (free tier = 20 requests/day; tonight needs ~100+ calls; expected cost is pennies to a few dollars)
-- [ ] [J] Finish `zero_shot` run on the 12 concepts (`--conditions zero_shot --models gemini --workers 1`; the 23 cached calls are reused)
-- [ ] [J] Build Phase 2 (repair) and run `zero_shot_repair` on the 12 concepts
+- [ ] [J] Finish `zero_shot` run on the 6 concepts (`--conditions zero_shot --models gemini --workers 1`): 11 of 20 scenes are cached, 9 new calls needed
+- [ ] [J] Build Phase 2 (repair) and run `zero_shot_repair` on the 6 concepts
 - [ ] [J] `analyze.py`: results table + figures (success rate by tier; error-type breakdown)
-- [ ] [J+K] **Human ratings:** both rate a sample of rendered videos (e.g. ~12, stratified by tier, mixed across both conditions, condition hidden) for mathematical correctness and visual clarity, 1–5 → `results/human_ratings.csv`; report mean per condition/tier + rater agreement
+- [ ] [J+K] **Human ratings:** both rate a sample of rendered videos (e.g. ~12, 2+ per concept, mixed across both conditions, condition hidden) for mathematical correctness and visual clarity, 1–5 → `results/human_ratings.csv`; report mean per condition/tier + rater agreement
 - [ ] [J+K] Pick qualitative examples (one clean success, one contrasting failure, e.g. hallucinated API or layout mess) and grab frames
 - [ ] [J+K] System diagram (pipeline figure) for Methods
 - [ ] [J+K] LaTeX report in `report/midterm/`, matching the example's style (see CLAUDE.md "Course deliverables"). 2–3 pp, 11 pt, 1" margins, single column, team name + roles on top. Page budgets: Overview ½, Dataset ½, Methods 1, Results ½–1, Next Steps ½
   - [ ] Overview: research question, motivation, link to course topics (prompting, RAG, self-refinement, code generation)
-  - [ ] Dataset: 12 concepts in 3 tiers, storyboards, Manim docs corpus (planned), ethics (no personal data; risk of confident but wrong math explanations → human correctness ratings)
-  - [ ] Methods: pipeline, prompt strategy, repair loop, diagram; **changes since the proposal** (GPT → Gemini; open model dropped after Qwen trial; no LangChain; 40 → 12 concepts) and why
+  - [ ] Dataset: 6 concepts in 3 tiers (20 scenes), storyboards, Manim docs corpus (planned), ethics (no personal data; risk of confident but wrong math explanations → human correctness ratings)
+  - [ ] Methods: pipeline, prompt strategy, repair loop, diagram; **changes since the proposal** (GPT → Gemini; open model dropped after Qwen trial; no LangChain; 40 → 6 concepts) and why
   - [ ] Preliminary Results: table + figures + human ratings + qualitative examples (prose with frames) + **interpretation** (rubric weights it)
   - [ ] Next Steps: few-shot, RAG, layout repair, voiceover, final human eval, demo
 - [ ] [J] Curate sample videos for submission: commit a few to `results/gallery/` (small, -ql) or share via Drive link
@@ -37,11 +37,11 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 - [ ] [K] System deps + test render with `manim -ql` on Koray's machine
 
 ## Phase 1 — Zero-shot baseline (`zero_shot`)
-- [x] [J] `data/concepts.json`: 12 concepts (4 per tier). This is the full set
+- [x] [J] `data/concepts.json`: 6 concepts (2 per tier). This is the full set
 - [x] [J] `config.py`, `llm.py`, `render.py` + error classifier, `logging_utils.py`, `planner.py`, `codegen.py`, `pipeline.py`
 - [x] [J] `experiments/run_ablation.py`, `experiments/analyze.py`, `experiments/review.py`
 - [x] [J] Unit tests: error classifier, code extraction, storyboard validation
-- [x] [J] Storyboards for all 12 concepts (gemini-3.5-flash, 2026-11-10)
+- [x] [J] Storyboards for all 6 concepts (gemini-3.5-flash, 2026-11-10)
 - [ ] [J] Check: watch the videos, read the failures (review page)
 
 ## Phase 2 — + Error repair (`zero_shot_repair`)
@@ -70,7 +70,7 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 - [ ] [K] `narration.py`: convert scenes to `VoiceoverScene`, gTTS backend; sync `with self.voiceover(text=...)` blocks
 - [ ] [J] `app/`: simple Gradio or Streamlit UI (type concept → progress log → video, with storyboard + code alongside)
 
-## Phase 7 — Testing (the real experiment runs, Gemini, 12 concepts)
+## Phase 7 — Testing (the real experiment runs, Gemini, 6 concepts)
 Same code, same storyboards, fixed temperature/seed. Check every run with `--limit 2` first.
 - [ ] [J+K] Test `zero_shot`, `zero_shot_repair`, `few_shot`, `rag`, `rag_repair`, `rag_repair_layout`
 - [ ] [J+K] (If time allows) leave-one-out rows: `full_minus_rag`, `full_minus_fewshot`

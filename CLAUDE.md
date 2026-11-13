@@ -6,7 +6,7 @@ Project context for Claude Code. Read this before making changes. The working ta
 
 CSE 434 (Generative AI, Dr. Yang Zhang, Miami University, Fall 2026) final project by **Jonah Femiani** and **Koray Bayram**.
 
-The system takes a short text description of a math/CS concept (e.g. "eigenvectors", "Bayes' theorem") and generates a **narrated Manim Community Edition (ManimCE) explainer video**, in the style of 3Blue1Brown.
+The system takes a short text description of a math/CS concept (e.g. "binary search", "the Pythagorean theorem") and generates a **narrated Manim Community Edition (ManimCE) explainer video**, in the style of 3Blue1Brown.
 
 **Research question:** Which generative techniques make LLM-written animation code render reliably and produce clear, uncluttered visuals? The main failure modes are:
 1. Hallucinated or outdated Manim APIs (code crashes)
@@ -53,7 +53,7 @@ Conditions, each run on every concept. `zero_shot_repair` is an extra row, built
 
 **Models (revised 2026-11-13; Dr. Zhang approved swapping models from the proposal):**
 - **Planner and codegen:** `gemini-3.5-flash` (`thinking_level=low`) via the Gemini API. Qwen2.5-Coder was tried and dropped because its output quality was too poor.
-- **Rate limits:** the free tier allows **20 requests/day per model**, which can't cover even the midterm (zero-shot + repair on 12 concepts is about 100+ calls). Use a **paid (billing-enabled) key**. Keep response caching on so reruns cost nothing.
+- **Rate limits:** the free tier allows **20 requests/day per model**, which can't cover even the midterm (zero-shot + repair on 6 concepts is about 40–60 calls). Use a **paid (billing-enabled) key**. Keep response caching on so reruns cost nothing.
 - `qwen7b`, `qwen3b` (Qwen2.5-Coder, 4-bit via Ollama; 4-bit is approved if used) and `llama2` remain registered in `config.py` as optional extra models. They are not part of the main experiment.
 - Changes from the proposal are allowed as long as they aren't too large. LangChain is not expected.
 
@@ -63,8 +63,8 @@ Keep every model behind the `LLM` interface (`llm.py`) so models can be swapped.
 
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
-- **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). All 12 were made 2026-11-10. If any are regenerated, regenerate all 12 together.
-- **Model drift note:** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be an alias for a newer model that can change over time. All 12 storyboards were made in one batch on 2026-11-10, so they're consistent with each other. Logs record `model_version` from the API, so mention the alias in the report and check that codegen runs report the same version.
+- **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). All 6 were made 2026-11-10. If any are regenerated, regenerate all 6 together.
+- **Model drift note:** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be an alias for a newer model that can change over time. All 6 storyboards were made in one batch on 2026-11-10, so they're consistent with each other. Logs record `model_version` from the API, so mention the alias in the report and check that codegen runs report the same version.
 - Fixed temperature (default 0.2) and seed where supported.
 - Conditions without repair get exactly 1 render attempt.
 
@@ -81,11 +81,11 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 
 ## Dataset
 
-- `data/concepts.json`: **12** team-curated concepts in 3 tiers, 4 each (the proposal said 40; reduced to 12 for the whole project, decided 2026-11-13):
-  - `concrete`: Pythagorean theorem, derivatives, …
-  - `structural`: matrix multiplication, binary search, Bayes' theorem, …
-  - `abstract`: entropy, recursion, the halting problem, …
-  - Schema: `{"id": "bayes_theorem", "name": "Bayes' theorem", "tier": "structural", "description": "one-sentence prompt"}`
+- `data/concepts.json`: **6** team-curated concepts, 2 per tier, 20 storyboard scenes in total. This is the whole project's set (the proposal said 40; cut to 12, then to 6 on 2026-11-13):
+  - `concrete`: Pythagorean theorem, derivative as slope
+  - `structural`: matrix multiplication, binary search
+  - `abstract`: recursion, Big-O notation
+  - Schema: `{"id": "binary_search", "name": "Binary search", "tier": "structural", "description": "one-sentence prompt"}`
 - `data/fewshot/`: curated example scenes (`.py`), from Manim Community docs/examples.
 - `data/manim_docs/`: the RAG corpus (ManimCE docs + example gallery), chunked and indexed.
 
@@ -136,9 +136,9 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 manim -ql path/to/scene.py SceneName
 
 # run the full pipeline on one concept
-python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model gemini
+python -m c2a.pipeline --concept binary_search --condition zero_shot --model gemini
 
-# run the ablation (use --limit for quick checks; --midterm for the 12-concept subset)
+# run the ablation (use --limit or --concepts for quick checks)
 python experiments/run_ablation.py --conditions zero_shot zero_shot_repair --models gemini
 
 # build tables from one or more runs' logs
@@ -152,7 +152,7 @@ pytest
 ```json
 {
   "run_id": "2026-11-12_a1b2",
-  "concept_id": "bayes_theorem",
+  "concept_id": "binary_search",
   "tier": "structural",
   "condition": "rag_repair",
   "model": "gemini-flash",
@@ -166,7 +166,7 @@ pytest
   "prompt_tokens": 1834,
   "completion_tokens": 612,
   "latency_s": 7.4,
-  "code_path": "outputs/2026-11-12_a1b2/bayes_theorem/scene_2_attempt_1.py",
+  "code_path": "outputs/2026-11-12_a1b2/zero_shot__gemini/binary_search/scene_2_attempt_1.py",
   "timestamp": "2026-11-12T19:03:11Z"
 }
 ```
@@ -219,8 +219,8 @@ Instrument the scene rather than analyzing pixels:
 
   Rubric (100): Problem Definition 15 (clear question, motivation, relevance to course) · Dataset 15 (appropriate, well-described, ethically considered) · Methodology 25 (sound and *creative* technical approach) · Preliminary Results 25 (evidence of progress *with interpretation and visuals*) · Writing & Organization 10 · Reflection & Next Steps 10 (realistic, thoughtful plan).
   The example report (`report/reference/course/midterm_example.pdf`) is a LaTeX article: title, names, roman-numeral sections (I. Project Overview … V. Next Steps), one full-width system-diagram figure with a caption, qualitative examples written as prose (one success, one contrasting failure), and a small booktabs-style table of baseline vs. improved method. Match that style.
-  **Changes since the proposal must be explained** (`report/reference/Project_Proposal_Femiani_Bayram.pdf`): GPT/OpenAI → Gemini 3.5 Flash; open model (LLaMA-2/Qwen) → dropped from the main study (Qwen2.5-Coder was tried, output too poor); LangChain → plain Python (exact logging of every call); 40 concepts → 12 (4 per tier).
-  **Midterm scope (agreed with Dr. Zhang):** 12 concepts, `zero_shot` vs. `zero_shot_repair` on Gemini, **plus human ratings** (correctness and clarity, 1–5). **Due Fri 2026-11-13, midnight.** Submit the PDF (required), plus the repo link and a few sample videos.
+  **Changes since the proposal must be explained** (`report/reference/Project_Proposal_Femiani_Bayram.pdf`): GPT/OpenAI → Gemini 3.5 Flash; open model (LLaMA-2/Qwen) → dropped from the main study (Qwen2.5-Coder was tried, output too poor); LangChain → plain Python (exact logging of every call); 40 concepts → 6 (2 per tier).
+  **Midterm scope (agreed with Dr. Zhang):** 6 concepts (20 scenes), `zero_shot` vs. `zero_shot_repair` on Gemini, **plus human ratings** (correctness and clarity, 1–5). **Due Fri 2026-11-13, midnight.** Submit the PDF (required), plus the repo link and a few sample videos.
 - **Final:** full ablation table (technique by condition on Gemini; extra models optional), human ratings by tier, success/failure gallery, working demo, final report.
 
 ## Gotchas

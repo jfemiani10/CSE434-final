@@ -2,9 +2,9 @@
 
 CSE 434 (Generative AI) final project, Miami University, Fall 2026. Jonah Femiani and Koray Bayram.
 
-Type in a math or CS concept ("Bayes' theorem", "binary search") and get a narrated explainer video built with [Manim Community Edition](https://www.manim.community/), in the style of 3Blue1Brown.
+Type in a math or CS concept ("binary search", "the Pythagorean theorem") and get a narrated explainer video built with [Manim Community Edition](https://www.manim.community/), in the style of 3Blue1Brown.
 
-The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare setups from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 12 concepts in three difficulty tiers, using Gemini 3.5 Flash to plan storyboards and write the code.
+The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare setups from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 6 concepts in three difficulty tiers, using Gemini 3.5 Flash to plan storyboards and write the code.
 
 ```
 concept → planner (storyboard) → code generator → render ⟲ fix errors → layout check ⟲ fix overlaps → narration → video
@@ -119,7 +119,7 @@ source .venv/bin/activate
 # one concept, end to end (prints per-scene results and the stitched video path)
 python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model gemini
 
-# a batch: all 12 concepts, zero-shot, Gemini (--workers 1 avoids per-minute rate limits)
+# a batch: all 6 concepts, zero-shot, Gemini (--workers 1 avoids per-minute rate limits)
 python experiments/run_ablation.py --conditions zero_shot --models gemini --workers 1
 
 # metrics for a run (the runner prints the exact command at the end)
