@@ -27,5 +27,6 @@
     "recursion",
     "big_o_notation"
   ],
-  "started": "2026-11-13T18:35:49"
+  "started": "2026-11-13T18:35:49",
+  "note": "matrix_multiplication/zero_shot_repair hit the free-tier daily quota and was rerun at ~18:45 with a second team API key (same model, same code, cached calls reused): python experiments/run_ablation.py --conditions zero_shot_repair --models gemini --concepts matrix_multiplication --workers 1 --run-id midterm_2026-11-13"
 }
