@@ -73,7 +73,7 @@ A \textbf{planner} turns the concept into a storyboard. A \textbf{code generator
 Post-processing is deliberately minimal (extract the code block, rename the class) so it cannot silently fix the errors we are measuring.
 Each scene is \textbf{rendered} in a separate subprocess with a 120\,s timeout; we check that the expected video file was actually written, because Manim exits successfully even when the named scene does not exist.
 Failures are \textbf{classified} from the traceback into \texttt{hallucinated\_api}, \texttt{bad\_signature}, \texttt{latex}, \texttt{timeout}, \texttt{syntax} or \texttt{other}.
-One subtlety: Manim's \texttt{Mobject} invents any \texttt{get\_*} method on demand, so a hallucinated call like \texttt{axes.get\_secant\_line(\ldots)} fails with a \texttt{TypeError} rather than an \texttt{AttributeError}; our classifier recognizes this pattern as a hallucinated API.
+Manim's \texttt{Mobject} invents any \texttt{get\_*} method on demand, so a hallucinated call like \texttt{axes.get\_secant\_line(\ldots)} surfaces as a \texttt{TypeError}; our classifier still labels it a hallucinated API.
 Every attempt is logged as one JSONL line (tokens, latency, error, code path), and responses are cached so reruns cost nothing.
 
 \begin{figure}[t]
@@ -109,24 +109,23 @@ Every attempt is logged as one JSONL line (tokens, latency, error, code path), a
 \draw[arr] (v) -- (s);
 \draw[arr] (r) -- (l);
 \draw[arr] (l) -- (a);
-\draw[repairarr] (e.north) -- node[left, align=right, font=\scriptsize, text=orange!80!black]{traceback, $\le 3$ retries\\[-2pt](repair, in progress)} (e.north |- g.south);
+\draw[repairarr] (e.north) -- node[left, align=right, font=\scriptsize, text=orange!80!black]{traceback, $\le 3$ retries\\[-2pt](\texttt{zero\_shot\_repair})} (e.north |- g.south);
 \end{tikzpicture}}
 \caption{System design v1. Green: LLM calls; blue: stored artifacts. Solid path: the zero-shot baseline. Dashed: the error-repair loop (\texttt{zero\_shot\_repair}), which feeds the traceback back to the code generator. Few-shot, RAG and layout repair will attach to the code generator later.}
 \label{fig:system}
 \end{figure}
 
-\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Temperature is fixed at 0.2, conditions without repair get exactly one render attempt, and repair conditions get up to three extra attempts. Metrics are computed per scene and aggregated by condition and tier: render success, first-try success, average repair iterations, layout-defect rate, error types, and two human scores (correctness and clarity, 1--5, blind to condition; a failed scene scores 0, so human scores reflect the whole pipeline).
+\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Temperature is fixed at 0.2, conditions without repair get exactly one render attempt, and repair conditions get up to three extra attempts. Per-scene metrics, aggregated by condition and tier: render success, first-try success, repair iterations, layout-defect rate, error types, and two human scores (failed scene $=0$, so they reflect the whole pipeline).
 
 \textbf{Changes since the proposal} (approved by Dr.~Zhang).
 (1)~\emph{Gemini 3.5 Flash instead of GPT + an open model:} we tried Qwen2.5-Coder (7B and 3B, 4-bit via Ollama), but its Manim code was too poor to make the comparison informative; open models stay available behind our LLM interface.
 (2)~\emph{No LangChain:} plain Python lets us log every prompt, reply and token count exactly.
 (3)~\emph{6 concepts instead of 40,} so every condition can be run and every video hand-rated.
-Google bills \texttt{gemini-3.5-flash} against a \texttt{gemini-3.6-flash} quota, so the name may be an alias; we log the provider-reported model version on every call to detect drift.
 
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-The baseline pipeline runs end to end. A first zero-shot run stopped at the Gemini free tier's 20-requests-per-day limit after 11 of 20 scenes (8 rendered); full runs use a paid key. Table~\ref{tab:results} reports both conditions on all 20 scenes.
+Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs about 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k). One caveat: every call reported its model as \texttt{gemini-3.6-flash}, so \texttt{gemini-3.5-flash} is an alias; we log the version to detect drift.
 
 \begin{table}[h]
 \centering
@@ -138,15 +137,15 @@ The baseline pipeline runs end to end. A first zero-shot run stopped at the Gemi
 \cmidrule(lr){2-4}\cmidrule(lr){5-6}
 Condition & Render success & First-try success & Avg.\ repairs & Correctness & Clarity \\
 \midrule
-\texttt{zero\_shot}        & \tbd\ (\tbd/20) & \tbd & --   & \tbd & \tbd \\
-\quad concrete (7)         & \tbd & \tbd & --   & \tbd & \tbd \\
-\quad structural (6)       & \tbd & \tbd & --   & \tbd & \tbd \\
-\quad abstract (7)         & \tbd & \tbd & --   & \tbd & \tbd \\
+\texttt{zero\_shot} & 70\% (14/20) & 70\% & -- & \tbd & \tbd \\
+\quad concrete (7) & 71\% (5/7) & 71\% & -- & \tbd & \tbd \\
+\quad structural (6) & 67\% (4/6) & 67\% & -- & \tbd & \tbd \\
+\quad abstract (7) & 71\% (5/7) & 71\% & -- & \tbd & \tbd \\
 \addlinespace
-\texttt{zero\_shot\_repair} & \tbd\ (\tbd/20) & \tbd & \tbd & \tbd & \tbd \\
-\quad concrete (7)         & \tbd & \tbd & \tbd & \tbd & \tbd \\
-\quad structural (6)       & \tbd & \tbd & \tbd & \tbd & \tbd \\
-\quad abstract (7)         & \tbd & \tbd & \tbd & \tbd & \tbd \\
+\texttt{zero\_shot\_repair} & \textbf{100\% (20/20)} & 70\% & 0.45 & \tbd & \tbd \\
+\quad concrete (7) & 100\% (7/7) & 71\% & 0.29 & \tbd & \tbd \\
+\quad structural (6) & 100\% (6/6) & 67\% & 0.83 & \tbd & \tbd \\
+\quad abstract (7) & 100\% (7/7) & 71\% & 0.29 & \tbd & \tbd \\
 \bottomrule
 \end{tabular}
 \caption{Gemini 3.5 Flash, all 20 scenes (scenes per tier in parentheses). For \texttt{zero\_shot\_repair}, render minus first-try success is what repair adds; avg.\ repairs is over scenes that eventually rendered. Human scores: mean of both raters over all 20 scenes; rendered scenes rated 1--5 blind to condition, failed scenes scored 0.}
@@ -169,9 +168,9 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
 \label{fig:frames}
 \end{figure}
 
-\textbf{Qualitative examples.} \emph{Success:} all four Pythagorean-theorem scenes rendered on the first try. Scene~3 (Fig.~\ref{fig:frames}a) rearranges four copies of the triangle inside an $(a+b)$ square to expose the $a^2$ and $b^2$ regions, a clean and correct version of the classic proof. \emph{Contrasting failure:} for the derivative, scene~1 (Fig.~\ref{fig:frames}b) correctly draws a secant through two points on $y=x^2$, but scenes 2 and 3, which must \emph{animate} the secant approaching the tangent, both crashed. The model reached for convenience methods (\texttt{get\_secant\_line}, \texttt{get\_tangent\_line}) that sound right but are not in ManimCE. Static drawings succeed; scenes that need an updater-driven animation are where hallucinated APIs appear.
+\textbf{Qualitative examples.} \emph{Success:} all four Pythagorean-theorem scenes rendered first try; scene~3 (Fig.~\ref{fig:frames}a) rearranges four triangles in an $(a+b)$ square to expose $a^2$ and $b^2$, a clean, correct version of the classic proof. \emph{Contrasting failure:} for the derivative, scene~1 (Fig.~\ref{fig:frames}b) correctly draws a secant through two points on $y=x^2$, but scenes 2 and 3, which must \emph{animate} the secant approaching the tangent, both crashed zero-shot: the model called convenience methods (\texttt{axes.get\_secant\_line}, \texttt{get\_tangent\_line}) that sound right but do not exist in ManimCE. Given the traceback, repair replaced each with a small helper method that computes the line itself, and both scenes rendered on the second attempt. Repair is not always one step: in matrix multiplication scene~2, fixing an invalid keyword exposed an undefined color \texttt{CYAN} (which the model then defined itself), then a LaTeX error; it rendered on the fourth and last attempt.
 
-\textbf{Error types.} Every failure so far is API misuse, never syntax or LaTeX: invented methods (\texttt{hallucinated\_api}) or keyword arguments the real class lacks (\texttt{bad\_signature}, e.g.\ \texttt{grid\_stroke\_width}). Each error message names the bad call, so these are exactly what traceback-driven repair should fix and RAG over the real docs should prevent.
+\textbf{Error types.} All six zero-shot failures are API misuse, never syntax: three \texttt{bad\_signature} (e.g.\ \texttt{grid\_stroke\_width}), two \texttt{hallucinated\_api}, and one misused \texttt{TransformMatchingTex}. Each error names the bad call, which is why repair works so well and what RAG over the real docs should prevent up front.
 
 \textbf{Human ratings.} \todo{mean correctness and clarity per condition (failed scenes $=0$), inter-rater agreement, and what the ratings show that render success does not.}
 
@@ -180,8 +179,8 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
 
 \begin{itemize}
   \item \textbf{Few-shot and RAG} (Koray): 3--5 curated modern ManimCE example scenes, and a retriever over the pinned ManimCE docs checked on whether it returns the right classes (e.g.\ \texttt{Axes.plot} for graphs).
-  \item \textbf{Layout checker and repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe defects to the LLM in plain language; tune the threshold on about ten hand-labeled scenes.
-  \item \textbf{Evaluation:} the full six-condition ablation by tier, token cost and latency per condition, human ratings with inter-rater agreement, and a success/failure gallery. \textbf{Demo:} gTTS narration and a type-a-concept web demo.
+  \item \textbf{Layout repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe them to the LLM in plain language. Since repair already reaches 100\% render success, clarity and correctness are now the metrics that can separate the remaining conditions.
+  \item \textbf{Evaluation and demo:} the full six-condition ablation by tier, cost per condition, a success/failure gallery, gTTS narration and a type-a-concept web demo.
 \end{itemize}
 
 \textbf{Open questions for feedback.} Are 20 scenes enough to separate conditions? Is a bounding-box check a fair proxy for clarity, or should clarity rest on human ratings alone? Should we add leave-one-out rows to check the ablation's stacking order?
