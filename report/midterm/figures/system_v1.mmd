@@ -1,0 +1,16 @@
+%% System design v1 (midterm). Render: npx -y @mermaid-js/mermaid-cli -i system_v1.mmd -o system_v1.png -s 3 -b white
+flowchart LR
+    C["Concept<br/><i>name + one-line description</i>"] --> P["1 · Planner<br/>Gemini 3.5 Flash"]
+    P --> SB[("Storyboard JSON<br/>3–4 scenes<br/>title · visual · narration<br/><i>cached, shared by all conditions</i>")]
+    SB --> G["2 · Code generator<br/>Gemini 3.5 Flash<br/><i>zero-shot prompt</i>"]
+    G --> X["Extract code block<br/>rename class → SceneK"]
+    X --> R["3 · Render<br/>manim -ql subprocess<br/>120 s timeout"]
+    R -->|success| V["Scene .mp4"]
+    R -->|"crash"| E["Error classifier<br/>hallucinated_api · bad_signature<br/>latex · timeout · syntax · other"]
+    E -. "traceback, ≤ 3 retries<br/>(zero_shot_repair, in progress)" .-> G
+    V --> S["Stitched video"]
+    R --> L[("JSONL log<br/>one line per attempt")]
+    L --> A["analyze.py<br/>success rates · error types · by tier"]
+
+    classDef store fill:#eef4ff,stroke:#3b6fd8;
+    class SB,L store;

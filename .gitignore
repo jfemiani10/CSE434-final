@@ -35,3 +35,6 @@ results/tables/dev*
 
 # Instructor course materials: keep local, not in the public repo
 report/reference/course/
+report/**/*.aux
+report/**/*.log
+report/**/*.out
