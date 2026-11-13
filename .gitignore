@@ -32,6 +32,7 @@ Thumbs.db
 # Throwaway dev runs: use a run id starting with "dev"
 results/logs/dev*/
 results/tables/dev*
+results/figures/dev*
 
 # Instructor course materials: keep local, not in the public repo
 report/reference/course/
