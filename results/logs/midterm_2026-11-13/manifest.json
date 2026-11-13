@@ -1,0 +1,31 @@
+{
+  "run_id": "midterm_2026-11-13",
+  "argv": [
+    "--conditions",
+    "zero_shot",
+    "zero_shot_repair",
+    "--models",
+    "gemini",
+    "--workers",
+    "2",
+    "--run-id",
+    "midterm_2026-11-13"
+  ],
+  "git_commit": "aff4861",
+  "conditions": [
+    "zero_shot",
+    "zero_shot_repair"
+  ],
+  "models": {
+    "gemini": "gemini-3.5-flash"
+  },
+  "concepts": [
+    "pythagorean_theorem",
+    "derivative_as_slope",
+    "matrix_multiplication",
+    "binary_search",
+    "recursion",
+    "big_o_notation"
+  ],
+  "started": "2026-11-13T18:35:49"
+}
