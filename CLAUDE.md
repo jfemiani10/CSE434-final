@@ -40,7 +40,7 @@ Optional augmentations to stage 2:
 
 This is a **cumulative (additive) ablation**: start from a bare zero-shot baseline and add one technique per condition, so the jump between adjacent rows is that technique's contribution *given everything above it*. (A classic leave-one-out ablation would instead start from the full pipeline and remove one part at a time; if budget allows, add `full_minus_rag` / `full_minus_fewshot` rows to check that the order of stacking isn't driving the conclusions.)
 
-Conditions, each run on every concept and on both models. `zero_shot_repair` is an extra row, built second and used for the midterm (baseline vs. one improvement). It also isolates repair's effect without few-shot/RAG:
+Conditions, each run on every concept. `zero_shot_repair` is an extra row, built second and used for the midterm (baseline vs. one improvement). It also isolates repair's effect without few-shot/RAG:
 
 | Condition id        | Few-shot | RAG | Error repair | Layout repair |
 |---------------------|:-------:|:---:|:------------:|:-------------:|
@@ -51,20 +51,20 @@ Conditions, each run on every concept and on both models. `zero_shot_repair` is 
 | `rag_repair`        | ✓       | ✓   | ✓            |               |
 | `rag_repair_layout` | ✓       | ✓   | ✓            | ✓             |
 
-**Models (decided 2026-11-10):**
-- **Codegen (the ablation's model axis):** `qwen7b` and `qwen3b`, i.e. Qwen2.5-Coder-Instruct at 7B and 3B parameters. Same family and training data, so **model size is the only variable**. The research question is: do few-shot/RAG/repair help a smaller model more? Both run locally via Ollama, 4-bit (`Q4_K_M`, tags pinned in `config.py`), so there are no rate limits or API costs. The report must say they're quantized. Neither is fine-tuned; RAG just puts retrieved docs in the prompt.
-- **Planner:** `gemini-3.5-flash` (`thinking_level=low`), about one call per concept, which fits the free tier (20 requests/day/model).
-- `gemini` is still available as a codegen model (`--models gemini`) for small comparisons, but the free tier can't cover a full ablation. `llama2` (named in the proposal) is still registered: 4k context only, weak at code.
-- The proposal said "GPT + an open model". Tell Dr. Zhang about the change.
+**Models (revised 2026-11-13; Dr. Zhang approved swapping models from the proposal):**
+- **Planner and codegen:** `gemini-3.5-flash` (`thinking_level=low`) via the Gemini API. Qwen2.5-Coder was tried and dropped because its output quality was too poor.
+- **Rate limits:** the free tier allows **20 requests/day per model**, which can't cover even the midterm (zero-shot + repair on 12 concepts is about 100+ calls). Use a **paid (billing-enabled) key**. Keep response caching on so reruns cost nothing.
+- `qwen7b`, `qwen3b` (Qwen2.5-Coder, 4-bit via Ollama; 4-bit is approved if used) and `llama2` remain registered in `config.py` as optional extra models. They are not part of the main experiment.
+- Changes from the proposal are allowed as long as they aren't too large. LangChain is not expected.
 
-**Where the models run:** Jonah's home PC, a headless Ubuntu box with a GTX 1660 Super (6 GB VRAM, about 336 GB/s memory bandwidth). Run each model's whole experiment on that one machine, with the same Ollama version and tags. Ollama serves an OpenAI-compatible API at `localhost:11434/v1`. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts, which would quietly break RAG/repair prompts. Set `OLLAMA_CONTEXT_LENGTH=8192` (for the systemd service, see README). Smoke test: `python scripts/check_open_model.py --model qwen7b`.
+**Ollama (only if a local model is used):** OpenAI-compatible API at `localhost:11434/v1`. **Gotcha:** Ollama's default context window is small and it **silently truncates** longer prompts. Set `OLLAMA_CONTEXT_LENGTH=8192` (see README). Smoke test: `python scripts/check_open_model.py --model qwen7b`.
 
 Keep every model behind the `LLM` interface (`llm.py`) so models can be swapped. API backends get response caching and retry with backoff.
 
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
-- **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). The 12 midterm storyboards were made 2026-11-10. New concepts must be planned with the same model; don't switch planners partway. The planner is about one call per concept, so it fits in the free tier.
-- **Known inconsistency (midterm only):** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be served by a newer model and could change over time. The 12 midterm storyboards (2026-11-10) may therefore come from a different underlying model than Koray's 28. **After the midterm, regenerate all 40 storyboards in one batch with one model** (`get_storyboard(c, regenerate=True)`), check that `model_version` matches across them, and rerun every condition on the new storyboards. Don't mix old and new storyboards in final results.
+- **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). All 12 were made 2026-11-10. If any are regenerated, regenerate all 12 together.
+- **Model drift note:** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be an alias for a newer model that can change over time. All 12 storyboards were made in one batch on 2026-11-10, so they're consistent with each other. Logs record `model_version` from the API, so mention the alias in the report and check that codegen runs report the same version.
 - Fixed temperature (default 0.2) and seed where supported.
 - Conditions without repair get exactly 1 render attempt.
 
@@ -81,7 +81,7 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 
 ## Dataset
 
-- `data/concepts.json`: 40 team-curated concepts in 3 tiers:
+- `data/concepts.json`: **12** team-curated concepts in 3 tiers, 4 each (the proposal said 40; reduced to 12 for the whole project, decided 2026-11-13):
   - `concrete`: Pythagorean theorem, derivatives, …
   - `structural`: matrix multiplication, binary search, Bayes' theorem, …
   - `abstract`: entropy, recursion, the halting problem, …
@@ -104,7 +104,7 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 │   └── manim_docs/           # raw docs + built index
 ├── src/c2a/
 │   ├── config.py             # condition definitions, model names, budgets
-│   ├── llm.py                # unified client: Gemini + Ollama (OpenAI-compatible)
+│   ├── llm.py                # unified client: Gemini (+ optional Ollama/OpenAI-compatible)
 │   ├── prompts/              # prompt templates as .md/.txt, not inline strings
 │   ├── planner.py
 │   ├── codegen.py
@@ -136,10 +136,10 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 manim -ql path/to/scene.py SceneName
 
 # run the full pipeline on one concept
-python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model qwen7b
+python -m c2a.pipeline --concept bayes_theorem --condition zero_shot --model gemini
 
 # run the ablation (use --limit for quick checks; --midterm for the 12-concept subset)
-python experiments/run_ablation.py --conditions zero_shot --models qwen7b qwen3b --midterm
+python experiments/run_ablation.py --conditions zero_shot zero_shot_repair --models gemini
 
 # build tables from one or more runs' logs
 python experiments/analyze.py results/logs/<run_id>
@@ -205,8 +205,8 @@ Instrument the scene rather than analyzing pixels:
 ## Team
 
 - **Jonah:** the whole `zero_shot` baseline end to end (env, LLM client, midterm concept subset, planner + zero-shot codegen prompts, render harness, logging, pipeline, ablation runner), then repair loops, layout checker, metrics/analysis, demo app.
-- **Koray:** rest of the 40-concept set, few-shot curation, RAG corpus + retriever, narration. Builds on Jonah's baseline harness (`llm.py`, `codegen.py`, logger) rather than a parallel one.
-- **Both:** human ratings, reports.
+- **Koray:** few-shot curation, RAG corpus + retriever, narration. Builds on Jonah's baseline harness (`llm.py`, `codegen.py`, logger) rather than a parallel one.
+- **Both:** human ratings (midterm and final), reports.
 
 ## Course deliverables
 
@@ -219,8 +219,9 @@ Instrument the scene rather than analyzing pixels:
 
   Rubric (100): Problem Definition 15 (clear question, motivation, relevance to course) · Dataset 15 (appropriate, well-described, ethically considered) · Methodology 25 (sound and *creative* technical approach) · Preliminary Results 25 (evidence of progress *with interpretation and visuals*) · Writing & Organization 10 · Reflection & Next Steps 10 (realistic, thoughtful plan).
   The example report (`report/reference/course/midterm_example.pdf`) is a LaTeX article: title, names, roman-numeral sections (I. Project Overview … V. Next Steps), one full-width system-diagram figure with a caption, qualitative examples written as prose (one success, one contrasting failure), and a small booktabs-style table of baseline vs. improved method. Match that style.
-  **Changes since the proposal must be explained** (`report/reference/Project_Proposal_Femiani_Bayram.pdf`). The proposal said OpenAI API + LangChain + Hugging Face, with GPT and LLaMA-2 or a newer code model. Now: Qwen2.5-Coder 7B vs 3B via Ollama, a Gemini planner, and no LangChain.
-- **Final:** full ablation table (technique × model), human ratings by tier, success/failure gallery, working demo, final report.
+  **Changes since the proposal must be explained** (`report/reference/Project_Proposal_Femiani_Bayram.pdf`): GPT/OpenAI → Gemini 3.5 Flash; open model (LLaMA-2/Qwen) → dropped from the main study (Qwen2.5-Coder was tried, output too poor); LangChain → plain Python (exact logging of every call); 40 concepts → 12 (4 per tier).
+  **Midterm scope (agreed with Dr. Zhang):** 12 concepts, `zero_shot` vs. `zero_shot_repair` on Gemini, **plus human ratings** (correctness and clarity, 1–5). **Due Fri 2026-11-13, midnight.** Submit the PDF (required), plus the repo link and a few sample videos.
+- **Final:** full ablation table (technique by condition on Gemini; extra models optional), human ratings by tier, success/failure gallery, working demo, final report.
 
 ## Gotchas
 

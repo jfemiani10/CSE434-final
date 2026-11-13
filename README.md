@@ -4,7 +4,7 @@ CSE 434 (Generative AI) final project, Miami University, Fall 2026. Jonah Femian
 
 Type in a math or CS concept ("Bayes' theorem", "binary search") and get a narrated explainer video built with [Manim Community Edition](https://www.manim.community/), in the style of 3Blue1Brown.
 
-The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare setups from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 40 concepts and two sizes of the same open code model (Qwen2.5-Coder 7B and 3B, run locally). Gemini writes the storyboards.
+The research question is which generative techniques make LLM-written animation code actually render, and look clean. LLMs often call Manim functions that don't exist or put objects on top of each other. We compare setups from a plain prompt up to the full pipeline (few-shot examples, retrieval of Manim docs, an error-repair loop and a layout-repair loop), on 12 concepts in three difficulty tiers, using Gemini 3.5 Flash to plan storyboards and write the code.
 
 ```
 concept → planner (storyboard) → code generator → render ⟲ fix errors → layout check ⟲ fix overlaps → narration → video
@@ -54,11 +54,13 @@ cp .env.example .env
 manim checkhealth
 ```
 
-**5. Local models (the codegen models: Qwen2.5-Coder 7B and 3B via Ollama):** see the next section. You need an NVIDIA GPU with at least 6 GB of VRAM.
+**5. (Optional) Local models.** Qwen2.5-Coder 7B/3B via Ollama are registered as extra models but aren't part of the main experiment. Setup is in the next section and needs an NVIDIA GPU with at least 6 GB of VRAM.
 
-## Running on the GPU box (headless Ubuntu)
+**Gemini quota:** the free tier allows only 20 requests per day per model, which isn't enough for a full run. Use a key with billing enabled (AI Studio → API keys → set up billing).
 
-The experiments run on a headless Ubuntu PC with a GTX 1660 Super, over SSH. One-time setup on that machine:
+## Optional: local models on a GPU box (headless Ubuntu)
+
+Only needed for the optional Qwen comparison. Tested target: a headless Ubuntu PC with a GTX 1660 Super, over SSH. One-time setup on that machine:
 
 ```bash
 nvidia-smi                       # must show the GPU. If not: sudo ubuntu-drivers install && sudo reboot
@@ -115,10 +117,10 @@ Or copy a run to your laptop: `rsync -av <user>@<home-pc>:CSE434-final/outputs/<
 source .venv/bin/activate
 
 # one concept, end to end (prints per-scene results and the stitched video path)
-python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model qwen7b
+python -m c2a.pipeline --concept pythagorean_theorem --condition zero_shot --model gemini
 
-# a batch: every midterm concept, zero-shot, both Qwen sizes
-python experiments/run_ablation.py --conditions zero_shot --models qwen7b qwen3b --midterm
+# a batch: all 12 concepts, zero-shot, Gemini (--workers 1 avoids per-minute rate limits)
+python experiments/run_ablation.py --conditions zero_shot --models gemini --workers 1
 
 # metrics for a run (the runner prints the exact command at the end)
 python experiments/analyze.py results/logs/<run_id>
