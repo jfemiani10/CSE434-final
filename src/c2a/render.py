@@ -46,6 +46,8 @@ def render_scene(code_path: Path, scene_name: str, media_dir: Path,
                             _tail(out), time.time() - t0)
     elapsed = time.time() - t0
     output = proc.stderr + "\n" + proc.stdout
+    # The traceback is on stderr; stdout is progress logs that would push it out of the tail.
+    error_text = proc.stderr if proc.stderr.strip() else proc.stdout
 
     if proc.returncode == 0:
         # Only accept a video written by *this* render. Manim also exits 0 when the
@@ -60,13 +62,14 @@ def render_scene(code_path: Path, scene_name: str, media_dir: Path,
             msg = "Render produced no video (scene has no animations?)"
         return RenderResult(False, None, "other", msg, _tail(output), elapsed)
 
-    error_type, error_msg = classify_error(output)
-    return RenderResult(False, None, error_type, error_msg, _tail(output), elapsed)
+    error_type, error_msg = classify_error(error_text)
+    return RenderResult(False, None, error_type, error_msg, _tail(error_text), elapsed)
 
 
 # --- error classification ----------------------------------------------------
 
-_EXC_LINE = re.compile(r"^\s*[│|]?\s*(?:[\w.]+\.)?(\w+(?:Error|Exception))\s*:\s*(.*)$", re.MULTILINE)
+# An exception line: "NameError: name 'x' is not defined", or a bare "AssertionError".
+_EXC_LINE = re.compile(r"^\s*[│|]?\s*(?:[\w.]+\.)?(\w+(?:Error|Exception))\s*(?::\s*(.*))?$", re.MULTILINE)
 
 
 def classify_error(output: str) -> tuple[str, str]:
@@ -77,7 +80,10 @@ def classify_error(output: str) -> tuple[str, str]:
     checked before the generic exception-name rules.
     """
     exc_name, exc_msg = _last_exception(output)
-    msg = f"{exc_name}: {exc_msg}" if exc_name else _last_nonempty_line(output)
+    if exc_name:
+        msg = f"{exc_name}: {exc_msg}" if exc_msg else f"{exc_name} (no message) in {_last_frame(output)}"
+    else:
+        msg = _last_nonempty_line(output)
     low = output.lower()
 
     if "latex error converting to dvi" in low or "latex compilation error" in low \
@@ -106,7 +112,18 @@ def _last_exception(output: str) -> tuple[str | None, str]:
         return None, ""
     m = matches[-1]
     # Rich tracebacks wrap long messages and pad with box-drawing chars; tidy up.
-    return m.group(1), m.group(2).strip().rstrip("│").strip()
+    return m.group(1), (m.group(2) or "").strip().rstrip("│").strip()
+
+
+def _last_frame(output: str) -> str:
+    """Last 'path:line in func' location in a traceback, for errors with no message."""
+    frames = re.findall(r"([\w./-]+\.py):(\d+) in (\w+)", output)
+    if not frames:
+        frames = [(f, n, fn) for f, n, fn in re.findall(r'File "([^"]+)", line (\d+), in (\w+)', output)]
+    if not frames:
+        return "unknown location"
+    f, n, fn = frames[-1]
+    return f"{fn} ({Path(f).name}:{n})"
 
 
 def _last_nonempty_line(output: str) -> str:

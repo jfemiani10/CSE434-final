@@ -32,3 +32,12 @@ def test_message_is_last_exception_line():
 def test_rich_box_chars_are_stripped():
     out = "│ NameError: name 'ShowCreation' is not defined │"
     assert classify_error(out) == ("hallucinated_api", "NameError: name 'ShowCreation' is not defined")
+
+
+def test_bare_exception_without_message():
+    out = ("│ manim/animation/transform_matching_parts.py:300 in get_mobject_key │\n"
+           "│ ❱ 300 │ assert isinstance(mobject, MathTexPart) │\n"
+           "AssertionError\n")
+    etype, msg = classify_error(out)
+    assert etype == "other"
+    assert msg.startswith("AssertionError") and "get_mobject_key" in msg
