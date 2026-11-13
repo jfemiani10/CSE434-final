@@ -14,7 +14,7 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 - [ ] [J] Finish `zero_shot` run on the 6 concepts (`--conditions zero_shot --models gemini --workers 1`): 11 of 20 scenes are cached, 9 new calls needed
 - [ ] [J] Build Phase 2 (repair) and run `zero_shot_repair` on the 6 concepts
 - [ ] [J] `analyze.py`: results table + figures (success rate by tier; error-type breakdown)
-- [ ] [J+K] **Human ratings:** both rate a sample of rendered videos (e.g. ~12, 2+ per concept, mixed across both conditions, condition hidden) for mathematical correctness and visual clarity, 1–5 → `results/human_ratings.csv`; report mean per condition/tier + rater agreement
+- [ ] [J+K] **Human ratings:** both rate every rendered scene from both conditions (shuffled, condition hidden) for correctness and clarity, 1–5; failed scenes score 0 automatically → `results/human_ratings.csv`; report mean per condition/tier (2 columns) + rater agreement
 - [ ] [J+K] Pick qualitative examples (one clean success, one contrasting failure, e.g. hallucinated API or layout mess) and grab frames
 - [ ] [J+K] System diagram (pipeline figure) for Methods
 - [ ] [J+K] LaTeX report in `report/midterm/`, matching the example's style (see CLAUDE.md "Course deliverables"). 2–3 pp, 11 pt, 1" margins, single column, team name + roles on top. Page budgets: Overview ½, Dataset ½, Methods 1, Results ½–1, Next Steps ½

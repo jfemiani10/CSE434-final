@@ -77,7 +77,7 @@ All metrics are computed per scene, then aggregated by condition × model × tie
 - **Avg repair iterations:** mean number of extra attempts, computed over successful scenes only.
 - **Layout-defect rate:** fraction of *rendered* scenes with ≥1 overlap or off-frame defect, measured at the final attempt.
 - **Error taxonomy** (for failed attempts): `hallucinated_api` (AttributeError/NameError/ImportError on a Manim name), `bad_signature` (TypeError), `latex` (LaTeX compile errors), `timeout`, `syntax`, `other`.
-- **Human ratings (1–5):** mathematical correctness and visual clarity, on a sample of final videos, recorded in `results/human_ratings.csv`.
+- **Human ratings:** two separate scores, mathematical correctness and visual clarity. Rendered scenes are rated 1–5 by both raters, blind to condition. **A scene that fails to render scores 0** (decided 2026-11-13), so averages are over all 20 scenes and reflect the whole pipeline. Recorded in `results/human_ratings.csv`; report the mean of both raters per condition/tier, plus inter-rater agreement.
 
 ## Dataset
 
