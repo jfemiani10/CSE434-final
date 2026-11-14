@@ -12,12 +12,29 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{titlesec}
 \usepackage{enumitem}
-\setlist{nosep,leftmargin=1.4em}
+\usepackage{microtype}
+\setlist{nosep,leftmargin=1.4em,topsep=0.25em}
 \emergencystretch=2em
+
+% Block paragraphs: a blank line between paragraphs instead of first-line indents,
+% so each paragraph reads as its own unit.
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em plus 0.15em minus 0.1em}
+
+% Captions: small, with a bold label, set apart from body text.
+\captionsetup{font=small,labelfont=bf,skip=4pt}
+\captionsetup[sub]{font=footnotesize,labelfont=bf,skip=2pt}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+
+% Never leave a single line of a paragraph stranded at a page break.
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
 
 \renewcommand{\thesection}{\Roman{section}}
 \titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
-\titlespacing*{\section}{0pt}{1.0ex}{0.5ex}
+\titlespacing*{\section}{0pt}{1.1em plus 0.3em minus 0.2em}{0.1em}
 
 % Marks text still to be filled in before submission.
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
@@ -30,14 +47,7 @@
 
 \begin{document}
 \maketitle
-\vspace{-1.5em}
-\begin{center}
-\small
-\textbf{Team:} Concept-to-Animation \quad
-\textbf{Roles:} \emph{Jonah} --- baseline pipeline (LLM client, planner, code generation, render harness, logging, ablation runner), repair and layout loops, analysis, demo.
-\emph{Koray} --- few-shot curation, RAG corpus and retriever, narration.
-\emph{Both} --- human evaluation and reports.
-\end{center}
+\vspace{-0.5em}
 
 % ---------------------------------------------------------------------------
 \section{Project Overview}
@@ -67,10 +77,11 @@ Storyboards are schema-validated and cached (one batch, one model), so every con
 % ---------------------------------------------------------------------------
 \section{Methods}
 
-Figure~\ref{fig:system} shows the current system (v1).
+\textbf{Pipeline.} Figure~\ref{fig:system} shows the current system (v1).
 A \textbf{planner} turns the concept into a storyboard. A \textbf{code generator} writes one ManimCE \texttt{Scene} subclass per storyboard scene; its prompt states the pinned Manim version, forbids the older ManimGL library, and gives the frame bounds ($x\in[-7.1,7.1]$, $y\in[-4,4]$).
 Post-processing is deliberately minimal (extract the code block, rename the class) so it cannot silently fix the errors we are measuring.
-Each scene is \textbf{rendered} in a separate subprocess with a 120\,s timeout; we check that the expected video file was actually written, because Manim exits successfully even when the named scene does not exist.
+
+\textbf{Rendering and error classification.} Each scene is \textbf{rendered} in a separate subprocess with a 120\,s timeout; we check that the expected video file was actually written, because Manim exits successfully even when the named scene does not exist.
 Failures are \textbf{classified} from the traceback into \texttt{hallucinated\_api}, \texttt{bad\_signature}, \texttt{latex}, \texttt{timeout}, \texttt{syntax} or \texttt{other}.
 Manim's \texttt{Mobject} invents any \texttt{get\_*} method on demand, so a hallucinated call like \texttt{axes.get\_secant\_line(\ldots)} surfaces as a \texttt{TypeError}; our classifier still labels it a hallucinated API.
 Every attempt is logged (tokens, latency, error, code) and responses are cached.
@@ -87,9 +98,9 @@ Every attempt is logged (tokens, latency, error, code) and responses are cached.
   repairarr/.style={arr, dashed, draw=orange!80!black}
 ]
 \node[box] (c) {Concept\\[-1pt]\scriptsize name + description};
-\node[llm, right=of c] (p) {1. Planner\\[-1pt]\scriptsize Gemini 3.5 Flash};
+\node[llm, right=of c] (p) {1. Planner\\[-1pt]\scriptsize Gemini 3.6 Flash};
 \node[store, right=of p] (sb) {Storyboard JSON\\[-1pt]\scriptsize 3--4 scenes, cached,\\[-2pt]\scriptsize shared by all conditions};
-\node[llm, right=of sb] (g) {2. Code generator\\[-1pt]\scriptsize Gemini 3.5 Flash\\[-2pt]\scriptsize zero-shot prompt};
+\node[llm, right=of sb] (g) {2. Code generator\\[-1pt]\scriptsize Gemini 3.6 Flash\\[-2pt]\scriptsize zero-shot prompt};
 \node[box, right=of g] (x) {Extract code\\[-1pt]\scriptsize rename to \texttt{SceneK}};
 \node[box, below=16mm of x] (r) {3. Render\\[-1pt]\scriptsize \texttt{manim -ql} subprocess\\[-2pt]\scriptsize 120\,s timeout};
 \node[box, left=of r] (e) {Error classifier\\[-1pt]\scriptsize hallucinated\_api, bad\_signature,\\[-2pt]\scriptsize latex, timeout, syntax, other};
@@ -114,17 +125,17 @@ Every attempt is logged (tokens, latency, error, code) and responses are cached.
 \label{fig:system}
 \end{figure}
 
-\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Temperature is fixed at 0.2, conditions without repair get exactly one render attempt, and repair conditions get up to three extra attempts. Per-scene metrics, aggregated by condition and tier: render success, first-try success, repair iterations, layout-defect rate, error types, and two human scores (failed scene $=0$, so they reflect the whole pipeline).
+\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Every LLM call uses Gemini 3.6 Flash at a low sampling temperature (0.2), so the model gives nearly the same answer each time and conditions stay comparable. Conditions without repair get one render attempt; repair conditions get up to three more. Per-scene metrics, aggregated by condition and tier: render success, first-try success, repair iterations, layout-defect rate, error types, and two human scores (failed scene $=0$, so they reflect the whole pipeline).
 
 \textbf{Changes since the proposal} (approved by Dr.~Zhang).
-(1)~\emph{Gemini 3.5 Flash instead of GPT + an open model:} we tried Qwen2.5-Coder (7B and 3B, 4-bit via Ollama), but its Manim code was too poor to make the comparison informative; open models stay available behind our LLM interface.
+(1)~\emph{Gemini 3.6 Flash instead of GPT + an open model:} we tried Qwen2.5-Coder (7B and 3B, 4-bit via Ollama), but its Manim code was too poor to make the comparison informative; open models stay available behind our LLM interface.
 (2)~\emph{No LangChain:} plain Python lets us log every prompt, reply and token count exactly.
 (3)~\emph{6 concepts instead of 40,} so every condition can be run and every video hand-rated.
 
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k). Every call reported \texttt{gemini-3.6-flash}, so \texttt{gemini-3.5-flash} is an alias; we log the version to detect drift.
+Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k).
 
 \begin{table}[h]
 \centering
@@ -147,7 +158,7 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
 \quad abstract (7) & 100\% (7/7) & 71\% & 0.29 & 4.57 & 4.29 \\
 \bottomrule
 \end{tabular}
-\caption{Gemini 3.5 Flash, all 20 scenes (scenes per tier in parentheses). For \texttt{zero\_shot\_repair}, render minus first-try success is what repair adds; avg.\ repairs is over scenes that eventually rendered. Human scores: mean of two raters over all 20 scenes; rendered scenes rated 1--5 blind to condition, failed scenes scored 0.}
+\caption{Gemini 3.6 Flash, all 20 scenes (scenes per tier in parentheses). For \texttt{zero\_shot\_repair}, render minus first-try success is what repair adds; avg.\ repairs is over scenes that eventually rendered. Human scores: mean of two raters over all 20 scenes; rendered scenes rated 1--5 blind to condition, failed scenes scored 0.}
 \label{tab:results}
 \end{table}
 % Partial run (2026-11-10, 11/20 scenes, superseded by the full run): 72.7% (8/11) overall;
@@ -186,6 +197,5 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
   \item \textbf{Evaluation and demo:} the full six-condition ablation by tier, cost per condition, a success/failure gallery, gTTS narration and a type-a-concept web demo.
 \end{itemize}
 
-\textbf{Open questions for feedback.} Are 20 scenes enough to separate conditions now that render success has saturated? Is a bounding-box check a fair proxy for clarity, or should clarity rest on human ratings? Should we add leave-one-out rows to check the ablation's stacking order?
 
 \end{document}

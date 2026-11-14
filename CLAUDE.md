@@ -64,7 +64,7 @@ Keep every model behind the `LLM` interface (`llm.py`) so models can be swapped.
 **Fairness rules:**
 - For a given concept, use the **same storyboard** (planner output) across all conditions so only codegen differs. Cache storyboards in `data/storyboards/`.
 - **All storyboards come from one planner model:** `gemini-3.5-flash` (`PLANNER_MODEL` in `config.py`; each storyboard JSON records `planner_model`). All 6 were made 2026-11-10. If any are regenerated, regenerate all 6 together.
-- **Model drift note:** Google counted our `gemini-3.5-flash` requests against a quota for `gemini-3.6-flash`, so the 3.5 name may be an alias for a newer model that can change over time. All 6 storyboards were made in one batch on 2026-11-10, so they're consistent with each other. Logs record `model_version` from the API, so mention the alias in the report and check that codegen runs report the same version.
+- **Model name:** the model is **Gemini 3.6 Flash**. `config.py` requests it by the API name `gemini-3.5-flash`, but every response reports `model_version = gemini-3.6-flash` (and quota is counted against 3.6), so the 3.5 name is just a label. Reports call it Gemini 3.6 Flash. Logs record `model_version`, so check it still says 3.6 in future runs.
 - Fixed temperature (default 0.2) and seed where supported.
 - Conditions without repair get exactly 1 render attempt.
 
