@@ -10,20 +10,20 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 ---
 
 ## Midterm — due TONIGHT, Fri 2026-11-13, midnight
-- [ ] [J] **Enable billing on the Gemini API key** (free tier = 20 requests/day; tonight needs ~100+ calls; expected cost is pennies to a few dollars)
-- [ ] [J] Finish `zero_shot` run on the 6 concepts (`--conditions zero_shot --models gemini --workers 1`): 11 of 20 scenes are cached, 9 new calls needed
-- [ ] [J] Build Phase 2 (repair) and run `zero_shot_repair` on the 6 concepts
-- [ ] [J] `analyze.py`: results table + figures (success rate by tier; error-type breakdown)
-- [ ] [J+K] **Human ratings:** both rate every rendered scene from both conditions (shuffled, condition hidden) for correctness and clarity, 1–5; failed scenes score 0 automatically → `results/human_ratings.csv`; report mean per condition/tier (2 columns) + rater agreement
-- [ ] [J+K] Pick qualitative examples (one clean success, one contrasting failure, e.g. hallucinated API or layout mess) and grab frames
-- [ ] [J+K] System diagram (pipeline figure) for Methods
-- [ ] [J+K] LaTeX report in `report/midterm/`, matching the example's style (see CLAUDE.md "Course deliverables"). 2–3 pp, 11 pt, 1" margins, single column, team name + roles on top. Page budgets: Overview ½, Dataset ½, Methods 1, Results ½–1, Next Steps ½
-  - [ ] Overview: research question, motivation, link to course topics (prompting, RAG, self-refinement, code generation)
-  - [ ] Dataset: 6 concepts in 3 tiers (20 scenes), storyboards, Manim docs corpus (planned), ethics (no personal data; risk of confident but wrong math explanations → human correctness ratings)
-  - [ ] Methods: pipeline, prompt strategy, repair loop, diagram; **changes since the proposal** (GPT → Gemini; open model dropped after Qwen trial; no LangChain; 40 → 6 concepts) and why
-  - [ ] Preliminary Results: table + figures + human ratings + qualitative examples (prose with frames) + **interpretation** (rubric weights it)
-  - [ ] Next Steps: few-shot, RAG, layout repair, voiceover, final human eval, demo
-- [ ] [J] Curate sample videos for submission: commit a few to `results/gallery/` (small, -ql) or share via Drive link
+- [x] [J] Gemini quota: the last repair job was rerun on Koray's key (free tier = 20 requests/day/model). **Enable billing before the next runs.**
+- [x] [J] Finish `zero_shot` run on the 6 concepts (`--conditions zero_shot --models gemini --workers 1`): 11 of 20 scenes are cached, 9 new calls needed
+- [x] [J] Build Phase 2 (repair) and run `zero_shot_repair` on the 6 concepts
+- [x] [J] `analyze.py`: results table + figures (success rate by tier; error-type breakdown)
+- [x] [J+K] **Human ratings:** both rate every rendered scene from both conditions (shuffled, condition hidden) for correctness and clarity, 1–5; failed scenes score 0 automatically → `results/human_ratings.csv`; report mean per condition/tier (2 columns) + rater agreement
+- [x] [J+K] Pick qualitative examples (one clean success, one contrasting failure, e.g. hallucinated API or layout mess) and grab frames
+- [x] [J+K] System diagram (pipeline figure) for Methods
+- [x] [J+K] LaTeX report in `report/midterm/`, matching the example's style (see CLAUDE.md "Course deliverables"). 2–3 pp, 11 pt, 1" margins, single column, team name + roles on top. Page budgets: Overview ½, Dataset ½, Methods 1, Results ½–1, Next Steps ½
+  - [x] Overview: research question, motivation, link to course topics (prompting, RAG, self-refinement, code generation)
+  - [x] Dataset: 6 concepts in 3 tiers (20 scenes), storyboards, Manim docs corpus (planned), ethics (no personal data; risk of confident but wrong math explanations → human correctness ratings)
+  - [x] Methods: pipeline, prompt strategy, repair loop, diagram; **changes since the proposal** (GPT → Gemini; open model dropped after Qwen trial; no LangChain; 40 → 6 concepts) and why
+  - [x] Preliminary Results: table + figures + human ratings + qualitative examples (prose with frames) + **interpretation** (rubric weights it)
+  - [x] Next Steps: few-shot, RAG, layout repair, voiceover, final human eval, demo
+- [x] [J] Curate sample videos for submission: commit a few to `results/gallery/` (small, -ql) or share via Drive link
 - [ ] [J] Push repo; proofread against the rubric; submit PDF + repo link + sample videos
 
 ## Phase 0 — Setup
@@ -42,13 +42,13 @@ Phases follow the build order: one phase per ablation layer, each ending with a 
 - [x] [J] `experiments/run_ablation.py`, `experiments/analyze.py`, `experiments/review.py`
 - [x] [J] Unit tests: error classifier, code extraction, storyboard validation
 - [x] [J] Storyboards for all 6 concepts (gemini-3.5-flash, 2026-11-10)
-- [ ] [J] Check: watch the videos, read the failures (review page)
+- [x] [J] Check: watch the videos, read the failures (review page)
 
 ## Phase 2 — + Error repair (`zero_shot_repair`)
-- [ ] [J] `repair.py`: render-and-repair loop (code + traceback → fixed code, ≤ N=3 retries), every attempt logged
-- [ ] [J] Repair prompt in `prompts/`
-- [ ] [J] Avg repair iterations metric in `analyze.py`
-- [ ] [J] Check: a scene that crashes zero-shot gets fixed by repair
+- [x] [J] `repair.py`: render-and-repair loop (code + traceback → fixed code, ≤ N=3 retries), every attempt logged
+- [x] [J] Repair prompt in `prompts/`
+- [x] [J] Avg repair iterations metric in `analyze.py`
+- [x] [J] Check: a scene that crashes zero-shot gets fixed by repair
 
 ## Phase 3 — + Few-shot (`few_shot`)
 - [ ] [K] Curate 3–5 example scenes into `data/fewshot/` (short, modern ManimCE; cover Axes/graphs, MathTex, shapes+arrows, transforms)
