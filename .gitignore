@@ -39,3 +39,9 @@ report/reference/course/
 report/**/*.aux
 report/**/*.log
 report/**/*.out
+
+# Local submission bundles (shared via Drive, not git)
+submission/
+
+# Curated sample videos for the reports (small, -ql)
+!results/gallery/*.mp4
