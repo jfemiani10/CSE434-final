@@ -1,7 +1,7 @@
-condition,model,tier,scenes,render_success,first_try_success,avg_repairs,tokens_per_scene
-zero_shot,gemini-3.5-flash,abstract,7,0.714,0.714,0.0,1673.857
-zero_shot,gemini-3.5-flash,concrete,7,0.714,0.714,0.0,1970.0
-zero_shot,gemini-3.5-flash,structural,6,0.667,0.667,0.0,2033.5
-zero_shot_repair,gemini-3.5-flash,abstract,7,1.0,0.714,0.286,2954.714
-zero_shot_repair,gemini-3.5-flash,concrete,7,1.0,0.714,0.286,3530.571
-zero_shot_repair,gemini-3.5-flash,structural,6,1.0,0.667,0.833,6886.5
+condition,model,tier,scenes,render_success,first_try_success,avg_repairs,tokens_per_scene,human_correctness,human_clarity
+zero_shot,gemini-3.5-flash,abstract,7,0.714,0.714,0.0,1673.857,3.143,2.929
+zero_shot,gemini-3.5-flash,concrete,7,0.714,0.714,0.0,1970.0,3.571,3.071
+zero_shot,gemini-3.5-flash,structural,6,0.667,0.667,0.0,2033.5,2.833,2.333
+zero_shot_repair,gemini-3.5-flash,abstract,7,1.0,0.714,0.286,2954.714,4.571,4.286
+zero_shot_repair,gemini-3.5-flash,concrete,7,1.0,0.714,0.286,3530.571,4.929,4.286
+zero_shot_repair,gemini-3.5-flash,structural,6,1.0,0.667,0.833,6886.5,4.25,3.083
