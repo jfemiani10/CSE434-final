@@ -24,9 +24,9 @@
 \newcommand{\tbd}{\textcolor{red}{?}}
 
 \title{\vspace{-3em}Concept-to-Animation: LLM-Generated Manim Explainer Videos\\[0.2em]
-\large CSE 434 Midterm Check-in Report}
+\large CSE 434 Midterm Check-in Report \,·\, November 13, 2026}
 \author{Jonah Femiani \and Koray Bayram}
-\date{November 13, 2026}
+\date{\vspace{-2.2em}}
 
 \begin{document}
 \maketitle
@@ -58,8 +58,7 @@ This connects directly to course topics on prompting, in-context learning, RAG, 
 Each has a one-sentence prompt; the tiers let us ask whether performance drops as concepts get less visual.
 
 \textbf{Storyboards.} For each concept the planner produces a storyboard of 3--4 scenes (20 scenes in total), each with a title, a visual description and narration.
-Storyboards are validated against a schema and cached, so every condition generates code for exactly the same scenes and only the code-generation step differs.
-All 6 were produced in one batch on 2026-11-10 by the same model.
+Storyboards are schema-validated and cached (one batch, one model), so every condition generates code for exactly the same scenes.
 
 \textbf{Retrieval corpus (planned):} the ManimCE docs and example gallery (MIT license), pinned to our render version (v0.22.1), chunked and embedded for RAG.
 
@@ -74,11 +73,11 @@ Post-processing is deliberately minimal (extract the code block, rename the clas
 Each scene is \textbf{rendered} in a separate subprocess with a 120\,s timeout; we check that the expected video file was actually written, because Manim exits successfully even when the named scene does not exist.
 Failures are \textbf{classified} from the traceback into \texttt{hallucinated\_api}, \texttt{bad\_signature}, \texttt{latex}, \texttt{timeout}, \texttt{syntax} or \texttt{other}.
 Manim's \texttt{Mobject} invents any \texttt{get\_*} method on demand, so a hallucinated call like \texttt{axes.get\_secant\_line(\ldots)} surfaces as a \texttt{TypeError}; our classifier still labels it a hallucinated API.
-Every attempt is logged as one JSONL line (tokens, latency, error, code path), and responses are cached so reruns cost nothing.
+Every attempt is logged (tokens, latency, error, code) and responses are cached.
 
 \begin{figure}[t]
 \centering
-\resizebox{\textwidth}{!}{%
+\resizebox{0.9\textwidth}{!}{%
 \begin{tikzpicture}[
   node distance=5mm and 10mm,
   box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize, minimum height=11mm, inner sep=3pt},
@@ -125,7 +124,7 @@ Every attempt is logged as one JSONL line (tokens, latency, error, code path), a
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs about 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k). One caveat: every call reported its model as \texttt{gemini-3.6-flash}, so \texttt{gemini-3.5-flash} is an alias; we log the version to detect drift.
+Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k). Every call reported \texttt{gemini-3.6-flash}, so \texttt{gemini-3.5-flash} is an alias; we log the version to detect drift.
 
 \begin{table}[h]
 \centering
@@ -137,18 +136,18 @@ Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot rend
 \cmidrule(lr){2-4}\cmidrule(lr){5-6}
 Condition & Render success & First-try success & Avg.\ repairs & Correctness & Clarity \\
 \midrule
-\texttt{zero\_shot} & 70\% (14/20) & 70\% & -- & \tbd & \tbd \\
-\quad concrete (7) & 71\% (5/7) & 71\% & -- & \tbd & \tbd \\
-\quad structural (6) & 67\% (4/6) & 67\% & -- & \tbd & \tbd \\
-\quad abstract (7) & 71\% (5/7) & 71\% & -- & \tbd & \tbd \\
+\texttt{zero\_shot} & 70\% (14/20) & 70\% & -- & 3.20 & 2.80 \\
+\quad concrete (7) & 71\% (5/7) & 71\% & -- & 3.57 & 3.07 \\
+\quad structural (6) & 67\% (4/6) & 67\% & -- & 2.83 & 2.33 \\
+\quad abstract (7) & 71\% (5/7) & 71\% & -- & 3.14 & 2.93 \\
 \addlinespace
-\texttt{zero\_shot\_repair} & \textbf{100\% (20/20)} & 70\% & 0.45 & \tbd & \tbd \\
-\quad concrete (7) & 100\% (7/7) & 71\% & 0.29 & \tbd & \tbd \\
-\quad structural (6) & 100\% (6/6) & 67\% & 0.83 & \tbd & \tbd \\
-\quad abstract (7) & 100\% (7/7) & 71\% & 0.29 & \tbd & \tbd \\
+\texttt{zero\_shot\_repair} & \textbf{100\% (20/20)} & 70\% & 0.45 & \textbf{4.60} & \textbf{3.92} \\
+\quad concrete (7) & 100\% (7/7) & 71\% & 0.29 & 4.93 & 4.29 \\
+\quad structural (6) & 100\% (6/6) & 67\% & 0.83 & 4.25 & 3.08 \\
+\quad abstract (7) & 100\% (7/7) & 71\% & 0.29 & 4.57 & 4.29 \\
 \bottomrule
 \end{tabular}
-\caption{Gemini 3.5 Flash, all 20 scenes (scenes per tier in parentheses). For \texttt{zero\_shot\_repair}, render minus first-try success is what repair adds; avg.\ repairs is over scenes that eventually rendered. Human scores: mean of both raters over all 20 scenes; rendered scenes rated 1--5 blind to condition, failed scenes scored 0.}
+\caption{Gemini 3.5 Flash, all 20 scenes (scenes per tier in parentheses). For \texttt{zero\_shot\_repair}, render minus first-try success is what repair adds; avg.\ repairs is over scenes that eventually rendered. Human scores: mean of two raters over all 20 scenes; rendered scenes rated 1--5 blind to condition, failed scenes scored 0.}
 \label{tab:results}
 \end{table}
 % Partial run (2026-11-10, 11/20 scenes, superseded by the full run): 72.7% (8/11) overall;
@@ -156,33 +155,37 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
 
 \begin{figure}[h]
 \centering
-\hfill\begin{subfigure}{0.31\textwidth}
+\begin{subfigure}[t]{0.31\textwidth}
   \includegraphics[width=\linewidth]{figures/pythagorean_s3.png}
-  \caption{Pythagorean theorem, scene 3 (rendered).}
+  \caption{Pythagorean theorem, scene 3: correct and clear.}
 \end{subfigure}\hfill
-\begin{subfigure}{0.31\textwidth}
+\begin{subfigure}[t]{0.31\textwidth}
   \includegraphics[width=\linewidth]{figures/derivative_s1.png}
-  \caption{Derivative as slope, scene 1 (rendered).}
-\end{subfigure}\hfill\null
-\caption{Final frames from two zero-shot scenes that rendered on the first try.}
+  \caption{Derivative as slope, scene 1: correct; scenes 2--3 needed repair.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.31\textwidth}
+  \includegraphics[width=\linewidth]{figures/matrix_s1.png}
+  \caption{Matrix mult., scene 1: rendered, but rated 2/5 correct.}
+\end{subfigure}
+\caption{Final frames of three zero-shot scenes that all rendered on the first try. (c) shows why render success alone is not enough: no operator between $A$ and $B$, mismatched brackets, and an empty dashed grid for $C$.}
 \label{fig:frames}
 \end{figure}
 
-\textbf{Qualitative examples.} \emph{Success:} all four Pythagorean-theorem scenes rendered first try; scene~3 (Fig.~\ref{fig:frames}a) rearranges four triangles in an $(a+b)$ square to expose $a^2$ and $b^2$, a clean, correct version of the classic proof. \emph{Contrasting failure:} for the derivative, scene~1 (Fig.~\ref{fig:frames}b) correctly draws a secant through two points on $y=x^2$, but scenes 2 and 3, which must \emph{animate} the secant approaching the tangent, both crashed zero-shot: the model called convenience methods (\texttt{axes.get\_secant\_line}, \texttt{get\_tangent\_line}) that sound right but do not exist in ManimCE. Given the traceback, repair replaced each with a small helper method that computes the line itself, and both scenes rendered on the second attempt. Repair is not always one step: in matrix multiplication scene~2, fixing an invalid keyword exposed an undefined color \texttt{CYAN} (which the model then defined itself), then a LaTeX error; it rendered on the fourth and last attempt.
+\textbf{Qualitative examples.} \emph{Success:} all four Pythagorean-theorem scenes rendered first try; scene~3 (Fig.~\ref{fig:frames}a) rearranges four triangles in an $(a+b)$ square to expose $a^2$ and $b^2$, a clean, correct version of the classic proof. \emph{Contrasting failure:} the derivative's static scene~1 (Fig.~\ref{fig:frames}b) is fine, but scenes 2 and 3, which must \emph{animate} the secant approaching the tangent, crashed zero-shot on methods that sound right but do not exist (\texttt{axes.get\_secant\_line}, \texttt{get\_tangent\_line}). Given the traceback, repair replaced each with a small helper method that computes the line itself, and both scenes rendered on the second attempt. Repair is not always one step: in matrix multiplication scene~2, fixing an invalid keyword exposed an undefined color \texttt{CYAN} (which the model then defined itself), then a LaTeX error; it rendered on the fourth and last attempt.
 
-\textbf{Error types.} All six zero-shot failures are API misuse, never syntax: three \texttt{bad\_signature} (e.g.\ \texttt{grid\_stroke\_width}), two \texttt{hallucinated\_api}, and one misused \texttt{TransformMatchingTex}. Each error names the bad call, which is why repair works so well and what RAG over the real docs should prevent up front.
+\textbf{Error types.} All six zero-shot crashes are API misuse, never syntax: three \texttt{bad\_signature}, two \texttt{hallucinated\_api}, one misused \texttt{TransformMatchingTex}. Each error names the bad call, which is why repair works and what RAG should prevent up front.
 
-\textbf{Human ratings.} \todo{mean correctness and clarity per condition (failed scenes $=0$), inter-rater agreement, and what the ratings show that render success does not.}
+\textbf{Human ratings.} Both authors rated the 20 distinct videos (repair's first-try successes are identical to zero-shot's) in shuffled order with the condition hidden. Repair raises correctness from 3.20 to 4.60 and clarity from 2.80 to 3.92, mostly by turning 0s into real videos; the repaired scenes themselves score as well as first-try successes (correctness 4.67 vs.\ 4.57), so repair does not degrade quality. Clarity trails correctness in every tier, and our notes point at layout, not math: labels hidden under shapes, arrows over numbers, overlapping grids, which is exactly what the planned layout checker targets. Structural scenes are the weakest on both (clarity 3.08 even after repair). Two rendered scenes have real content errors that no automatic metric caught: Fig.~\ref{fig:frames}c, and a Big-O plot whose $n\log n$ curve is drawn wrong. Raters agreed closely on correctness (80\% exact, 100\% within one point, $r=0.88$) but less on clarity (50\% exact, 80\% within one, $r=0.63$), so we will write a clarity rubric before the final evaluation.
 
 % ---------------------------------------------------------------------------
 \section{Next Steps}
 
 \begin{itemize}
-  \item \textbf{Few-shot and RAG} (Koray): 3--5 curated modern ManimCE example scenes, and a retriever over the pinned ManimCE docs checked on whether it returns the right classes (e.g.\ \texttt{Axes.plot} for graphs).
-  \item \textbf{Layout repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe them to the LLM in plain language. Since repair already reaches 100\% render success, clarity and correctness are now the metrics that can separate the remaining conditions.
+  \item \textbf{Few-shot and RAG} (Koray): 3--5 curated modern example scenes, and a retriever over the pinned ManimCE docs, checked on whether it returns the right classes.
+  \item \textbf{Layout repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe them to the LLM in plain language. With render success at 100\%, clarity, our lowest score, is now the target.
   \item \textbf{Evaluation and demo:} the full six-condition ablation by tier, cost per condition, a success/failure gallery, gTTS narration and a type-a-concept web demo.
 \end{itemize}
 
-\textbf{Open questions for feedback.} Are 20 scenes enough to separate conditions? Is a bounding-box check a fair proxy for clarity, or should clarity rest on human ratings alone? Should we add leave-one-out rows to check the ablation's stacking order?
+\textbf{Open questions for feedback.} Are 20 scenes enough to separate conditions now that render success has saturated? Is a bounding-box check a fair proxy for clarity, or should clarity rest on human ratings? Should we add leave-one-out rows to check the ablation's stacking order?
 
 \end{document}
