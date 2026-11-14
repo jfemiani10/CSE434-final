@@ -47,7 +47,14 @@
 
 \begin{document}
 \maketitle
-\vspace{-0.5em}
+\vspace{-1.2em}
+\begin{center}
+\begin{minipage}{0.88\textwidth}
+\small
+\textbf{Roles.} \emph{Jonah Femiani:} pipeline and experiments (LLM client, planner and code-generation prompts, render harness, error repair, logging, analysis), report. \emph{Koray Bayram:} few-shot examples and RAG retrieval (upcoming), narration, report. \emph{Both:} human ratings.
+\end{minipage}
+\end{center}
+\vspace{-0.3em}
 
 % ---------------------------------------------------------------------------
 \section{Project Overview}
@@ -84,7 +91,6 @@ Post-processing is deliberately minimal (extract the code block, rename the clas
 \textbf{Rendering and error classification.} Each scene is \textbf{rendered} in a separate subprocess with a 120\,s timeout; we check that the expected video file was actually written, because Manim exits successfully even when the named scene does not exist.
 Failures are \textbf{classified} from the traceback into \texttt{hallucinated\_api}, \texttt{bad\_signature}, \texttt{latex}, \texttt{timeout}, \texttt{syntax} or \texttt{other}.
 Manim's \texttt{Mobject} invents any \texttt{get\_*} method on demand, so a hallucinated call like \texttt{axes.get\_secant\_line(\ldots)} surfaces as a \texttt{TypeError}; our classifier still labels it a hallucinated API.
-Every attempt is logged (tokens, latency, error, code) and responses are cached.
 
 \begin{figure}[t]
 \centering
@@ -125,7 +131,7 @@ Every attempt is logged (tokens, latency, error, code) and responses are cached.
 \label{fig:system}
 \end{figure}
 
-\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Every LLM call uses Gemini 3.6 Flash at a low sampling temperature (0.2), so the model gives nearly the same answer each time and conditions stay comparable. Conditions without repair get one render attempt; repair conditions get up to three more. Per-scene metrics, aggregated by condition and tier: render success, first-try success, repair iterations, layout-defect rate, error types, and two human scores (failed scene $=0$, so they reflect the whole pipeline).
+\textbf{Experimental design.} The full study is a cumulative ablation over six conditions: \texttt{zero\_shot}, \texttt{zero\_shot\_repair}, \texttt{few\_shot}, \texttt{rag}, \texttt{rag\_repair} and \texttt{rag\_repair\_layout}. Every LLM call uses Gemini 3.6 Flash at a low sampling temperature (0.2), so the model gives nearly the same answer each time and conditions stay comparable. Conditions without repair get one render attempt; repair conditions get up to three more. We report per-scene metrics by condition and tier (Table~\ref{tab:results}), plus layout-defect rate once the checker exists.
 
 \textbf{Changes since the proposal} (approved by Dr.~Zhang).
 (1)~\emph{Gemini 3.6 Flash instead of GPT + an open model:} we tried Qwen2.5-Coder (7B and 3B, 4-bit via Ollama), but its Manim code was too poor to make the comparison informative; open models stay available behind our LLM interface.
@@ -135,7 +141,7 @@ Every attempt is logged (tokens, latency, error, code) and responses are cached.
 % ---------------------------------------------------------------------------
 \section{Preliminary Results}
 
-Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene), so at this stage difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k).
+Table~\ref{tab:results} reports both conditions on all 20 scenes. Zero-shot renders 70\% of scenes, roughly evenly across tiers; error-driven repair raises this to \textbf{100\%}, needing 0.45 extra attempts per scene on average. Structural scenes (matrix grids, arrays) needed the most help (0.83 repairs per scene): difficulty tracks how much layout code a scene needs, not how abstract the concept is. Repair costs 2.3$\times$ the tokens per scene (4.3k vs.\ 1.9k).
 
 \begin{table}[h]
 \centering
@@ -186,15 +192,15 @@ Condition & Render success & First-try success & Avg.\ repairs & Correctness & C
 
 \textbf{Error types.} All six zero-shot crashes are API misuse, never syntax: three \texttt{bad\_signature}, two \texttt{hallucinated\_api}, one misused \texttt{TransformMatchingTex}. Each error names the bad call, which is why repair works and what RAG should prevent up front.
 
-\textbf{Human ratings.} Both authors rated the 20 distinct videos (repair's first-try successes are identical to zero-shot's) in shuffled order with the condition hidden. Repair raises correctness from 3.20 to 4.60 and clarity from 2.80 to 3.92, mostly by turning 0s into real videos; the repaired scenes themselves score as well as first-try successes (correctness 4.67 vs.\ 4.57), so repair does not degrade quality. Clarity trails correctness in every tier, and our notes point at layout, not math: labels hidden under shapes, arrows over numbers, overlapping grids, which is exactly what the planned layout checker targets. Structural scenes are the weakest on both (clarity 3.08 even after repair). Two rendered scenes have real content errors that no automatic metric caught: Fig.~\ref{fig:frames}c, and a Big-O plot whose $n\log n$ curve is drawn wrong. Raters agreed closely on correctness (80\% exact, 100\% within one point, $r=0.88$) but less on clarity (50\% exact, 80\% within one, $r=0.63$), so we will write a clarity rubric before the final evaluation.
+\textbf{Human ratings.} Both authors rated the 20 distinct videos, shuffled, with the condition hidden. Repair raises correctness from 3.20 to 4.60 and clarity from 2.80 to 3.92, mostly by turning 0s into real videos; the repaired scenes themselves score as well as first-try successes (correctness 4.67 vs.\ 4.57), so repair does not degrade quality. Clarity trails correctness in every tier, and our notes point at layout, not math: labels hidden under shapes, arrows over numbers, overlapping grids, which is exactly what the planned layout checker targets. Structural scenes are the weakest on both (clarity 3.08 even after repair). Two rendered scenes have real content errors that no automatic metric caught: Fig.~\ref{fig:frames}c, and a Big-O plot whose $n\log n$ curve is drawn wrong. Raters agreed closely on correctness (80\% exact, 100\% within one point, $r=0.88$) but less on clarity (50\% exact, 80\% within one, $r=0.63$), so we will write a clarity rubric before the final evaluation.
 
 % ---------------------------------------------------------------------------
 \section{Next Steps}
 
 \begin{itemize}
   \item \textbf{Few-shot and RAG} (Koray): 3--5 curated modern example scenes, and a retriever over the pinned ManimCE docs, checked on whether it returns the right classes.
-  \item \textbf{Layout repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe them to the LLM in plain language. With render success at 100\%, clarity, our lowest score, is now the target.
-  \item \textbf{Evaluation and demo:} the full six-condition ablation by tier, cost per condition, a success/failure gallery, gTTS narration and a type-a-concept web demo.
+  \item \textbf{Layout repair:} snapshot bounding boxes after each animation, flag off-frame objects and unintended overlaps, and describe them to the LLM; clarity, our lowest score, is now the target.
+  \item \textbf{Evaluation and demo:} all six conditions, a success/failure gallery, narration and a web demo.
 \end{itemize}
 
 
